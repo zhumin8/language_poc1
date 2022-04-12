@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.sample.autoconfig;
 
 import com.google.cloud.language.v1.Document;
 import com.google.cloud.language.v1.Document.Type;

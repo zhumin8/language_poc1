@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.sample.autoconfig;
 
 import com.google.cloud.language.v1.LanguageServiceClient;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass(LanguageTemplate.class)
+// @ConditionalOnClass(LanguageServiceClient.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.language.enabled", matchIfMissing = true)
 public class LanguageAutoConfig {
   @Bean
