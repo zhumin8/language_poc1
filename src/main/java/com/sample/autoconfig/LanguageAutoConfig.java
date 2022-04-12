@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
-// @ConditionalOnClass(LanguageServiceClient.class)
+@ConditionalOnClass(LanguageServiceClient.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.language.enabled", matchIfMissing = true)
 public class LanguageAutoConfig {
   @Bean
