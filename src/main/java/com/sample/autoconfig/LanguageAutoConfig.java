@@ -3,10 +3,8 @@ package com.sample.autoconfig;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
-import com.google.cloud.spring.autoconfigure.vision.CloudVisionAutoConfiguration;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
 import com.google.cloud.spring.core.GcpProjectIdProvider;
-import com.google.cloud.spring.core.UserAgentHeaderProvider;
 import java.io.IOException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -23,24 +21,23 @@ public class LanguageAutoConfig {
 
   private final LanguageProperties clientProperties;
   private final CredentialsProvider credentialsProvider;
-  private final String projectId;
+  private final GcpProjectIdProvider projectIdProvider;
 
   public LanguageAutoConfig(LanguageProperties properties,
-      CredentialsProvider credentialsProvider,
-      GcpProjectIdProvider projectIdProvider)
+      CredentialsProvider coreCredentialsProvider,
+      GcpProjectIdProvider coreProjectIdProvider)
       throws IOException {
     this.clientProperties = properties;
     if (properties.getCredentials().hasKey()) {
       this.credentialsProvider = new DefaultCredentialsProvider(properties);
     } else {
-      this.credentialsProvider = credentialsProvider;
+      this.credentialsProvider = coreCredentialsProvider;
     }
-    if (properties.getProjectId() != null) {
-      this.projectId =
-          properties.getProjectId();
+
+    if (clientProperties.getProjectId() != null) {
+      this.projectIdProvider = () -> clientProperties.getProjectId();
     } else {
-      this.projectId =
-          projectIdProvider.getProjectId();
+      this.projectIdProvider = coreProjectIdProvider;
     }
   }
 
@@ -51,7 +48,7 @@ public class LanguageAutoConfig {
     LanguageServiceSettings clientSettings =
         LanguageServiceSettings.newBuilder()
             .setCredentialsProvider(this.credentialsProvider)
-            .setQuotaProjectId(this.projectId)
+            .setQuotaProjectId(this.projectIdProvider.getProjectId())
             // .setEndpoint("language.googleapis.com:443")
         .build();
      return LanguageServiceClient.create(clientSettings);
