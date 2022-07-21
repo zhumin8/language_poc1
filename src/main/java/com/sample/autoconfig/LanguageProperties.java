@@ -12,18 +12,18 @@ public class LanguageProperties implements CredentialsSupplier {
   @NestedConfigurationProperty
   private final Credentials credentials = new Credentials("https://www.googleapis.com/auth/cloud-language");
 
-  private String projectId;
+  private String quotaProjectId;
 
   @Override
   public Credentials getCredentials() {
     return this.credentials;
   }
 
-  public String getProjectId() {
-    return projectId;
+  public String getQuotaProjectId() {
+    return quotaProjectId;
   }
 
-  public void setProjectId(String projectId) {
-    this.projectId = projectId;
+  public void setQuotaProjectId(String quotaProjectId) {
+    this.quotaProjectId = quotaProjectId;
   }
 }
