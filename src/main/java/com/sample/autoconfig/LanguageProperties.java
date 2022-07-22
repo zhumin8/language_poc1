@@ -14,6 +14,8 @@ public class LanguageProperties implements CredentialsSupplier {
 
   private String quotaProjectId;
 
+  private Integer executorThreadCount;
+
   @Override
   public Credentials getCredentials() {
     return this.credentials;
@@ -25,5 +27,13 @@ public class LanguageProperties implements CredentialsSupplier {
 
   public void setQuotaProjectId(String quotaProjectId) {
     this.quotaProjectId = quotaProjectId;
+  }
+
+  public Integer getExecutorThreadCount() {
+    return executorThreadCount;
+  }
+
+  public void setExecutorThreadCount(int executorThreadCount) {
+    this.executorThreadCount = executorThreadCount;
   }
 }
