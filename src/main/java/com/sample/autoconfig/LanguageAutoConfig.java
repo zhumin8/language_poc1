@@ -2,14 +2,9 @@ package com.sample.autoconfig;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.ServiceOptions;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
-import com.google.cloud.spring.autoconfigure.core.GcpContextAutoConfiguration;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
-import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
-import com.google.cloud.spring.core.GcpProjectIdProvider;
 import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,8 +12,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.threeten.bp.Duration;
 
 @Configuration(proxyBeanMethods = false)
@@ -32,15 +30,15 @@ public class LanguageAutoConfig {
   private final CredentialsProvider credentialsProvider;
   // private final GcpProjectIdProvider quotaProjectIdProvider;
 
-  public LanguageAutoConfig(LanguageProperties properties,
-      CredentialsProvider coreCredentialsProvider)
+  public LanguageAutoConfig(LanguageProperties properties)
+      // CredentialsProvider coreCredentialsProvider)
       throws IOException {
     this.clientProperties = properties;
-    if (properties.getCredentials().hasKey()) {
-      this.credentialsProvider = (CredentialsProvider) new DefaultCredentialsProvider(properties);
-    } else {
-      this.credentialsProvider = coreCredentialsProvider;
-    }
+    // if (properties.getCredentials().hasKey()) {
+      this.credentialsProvider = (CredentialsProvider) new DefaultCredentialsProvider(properties); // make this into bean, set refresh scope, does it work?
+    // } else {
+    //   // this.credentialsProvider = coreCredentialsProvider;
+    // }
 
     // GcpProjectIdProvider: looks for property id in "spring.cloud.gcp.projectID" if null,
     // then get default by ServiceOptions.getDefaultProjectId()
@@ -52,9 +50,19 @@ public class LanguageAutoConfig {
 
   }
 
+
   @Bean
+  // @RefreshScope
   @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient() throws IOException {
+  public CredentialsProvider googleCredentials() throws IOException {
+    return new DefaultCredentialsProvider(this.clientProperties);
+  }
+
+  @Bean
+  // @EventListener(RefreshScopeRefreshedEvent.class)
+  // @RefreshScope
+  @ConditionalOnMissingBean
+  public LanguageServiceClient languageServiceClient(CredentialsProvider credentialsProvider) throws IOException {
 
     LanguageServiceSettings.defaultApiClientHeaderProviderBuilder();
 
@@ -62,7 +70,7 @@ public class LanguageAutoConfig {
     // LanguageServiceSettings clientSettings =
     LanguageServiceSettings.Builder clientSettingsBuilder =
         LanguageServiceSettings.newBuilder()
-        .setCredentialsProvider(this.credentialsProvider)
+        .setCredentialsProvider(credentialsProvider)
         // quota project when set, a custom set quota project id takes priority over one detected by credentials:
         // https://github.com/googleapis/gax-java/blob/main/gax/src/main/java/com/google/api/gax/rpc/ClientContext.java#L170-L176
         // .setQuotaProjectId(this.quotaProjectIdProvider.getProjectId())
@@ -158,7 +166,6 @@ public class LanguageAutoConfig {
 
 
     // -------------------
-
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
   }
