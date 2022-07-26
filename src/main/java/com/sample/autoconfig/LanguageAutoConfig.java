@@ -12,13 +12,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
-import org.threeten.bp.Duration;
 
+/**
+ * Create client with client library default setting, except:
+ * - set credentialsProvider, so user/service account/compute engine key can be intake from spring
+ * property "spring.cloud.gcp.credentials.location/encoded-key"
+ * - set HeaderProvider for internal metrics
+ * - set optional quotaProjectId, this overrides projectId obtained from credentials when present
+ * - set ExecutorThreadCount when present, sets to client library default if not specified (not tested yet)
+ */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(LanguageServiceClient.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.language.enabled", matchIfMissing = true)
@@ -27,60 +31,31 @@ public class LanguageAutoConfig {
 
   private static final Log LOGGER = LogFactory.getLog(LanguageAutoConfig.class);
   private final LanguageProperties clientProperties;
-  private final CredentialsProvider credentialsProvider;
-  // private final GcpProjectIdProvider quotaProjectIdProvider;
 
-  public LanguageAutoConfig(LanguageProperties properties)
-      // CredentialsProvider coreCredentialsProvider)
-      throws IOException {
+  public LanguageAutoConfig(LanguageProperties properties){
     this.clientProperties = properties;
-    // if (properties.getCredentials().hasKey()) {
-      this.credentialsProvider = (CredentialsProvider) new DefaultCredentialsProvider(properties); // make this into bean, set refresh scope, does it work?
-    // } else {
-    //   // this.credentialsProvider = coreCredentialsProvider;
-    // }
-
-    // GcpProjectIdProvider: looks for property id in "spring.cloud.gcp.projectID" if null,
-    // then get default by ServiceOptions.getDefaultProjectId()
-    // if (clientProperties.getQuotaProjectId() != null) {
-    //   this.quotaProjectIdProvider = (GcpProjectIdProvider) () -> clientProperties.getQuotaProjectId();
-    // } else {
-    //   this.quotaProjectIdProvider = coreProjectIdProvider;
-    // }
-
   }
 
 
+  // benefit of configuring as a separate bean: could be easier to override if needed?
   @Bean
-  // @RefreshScope
   @ConditionalOnMissingBean
   public CredentialsProvider googleCredentials() throws IOException {
     return new DefaultCredentialsProvider(this.clientProperties);
   }
 
   @Bean
-  // @EventListener(RefreshScopeRefreshedEvent.class)
-  // @RefreshScope
   @ConditionalOnMissingBean
   public LanguageServiceClient languageServiceClient(CredentialsProvider credentialsProvider) throws IOException {
 
-    LanguageServiceSettings.defaultApiClientHeaderProviderBuilder();
-
-    // LanguageServiceSettings.defaultCredentialsProviderBuilder();
-    // LanguageServiceSettings clientSettings =
     LanguageServiceSettings.Builder clientSettingsBuilder =
         LanguageServiceSettings.newBuilder()
         .setCredentialsProvider(credentialsProvider)
-        // quota project when set, a custom set quota project id takes priority over one detected by credentials:
-        // https://github.com/googleapis/gax-java/blob/main/gax/src/main/java/com/google/api/gax/rpc/ClientContext.java#L170-L176
-        // .setQuotaProjectId(this.quotaProjectIdProvider.getProjectId())
-
         // with this header provider:
-        // user-agent: Spring/3.2.1 spring-cloud-gcp-[packagename]/3.2.1;
+        // user-agent: Spring-autoconfig//3.2.1 spring-cloud-autogen-config-[packagename]/3.2.1;
         // with default, Map<String, String> headersMap = language.getSettings().getHeaderProvider().getHeaders();
         // is empty map.
         .setHeaderProvider(new UserAgentHeaderProvider(this.getClass()));// custom provider class.
-// .getStubSettingsBuilder().setCredentialsProvider()
             // .setEndpoint("language.googleapis.com:443")
 
     // this only looks in "spring.cloud.gcp.language.quotaProjectId", if null just leave empty
@@ -105,67 +80,15 @@ public class LanguageAutoConfig {
     }
 
 
-    // for each method, set retry settings.
-    // is this too much to expose to users?
-    // or set a retrysettings bean with defaults -- allow users to override.
-    clientSettingsBuilder.annotateTextSettings().getRetrySettings().toBuilder().setTotalTimeout(
-        Duration.ofMillis(600000L));
+    // // for each method, set retry settings.
+    // // - is this too much to expose to users?
+    // // - or set a retrysettings bean with defaults -- allow users to override.
+    // // Do not set retry settings, because each method
+    // // has own set of default retry settings/ or no retry. Too much lower level details to expose.
+    // clientSettingsBuilder.annotateTextSettings().getRetrySettings().toBuilder().setTotalTimeout(
+    //     Duration.ofMillis(600000L));
 
 
-
-    // // -------------------
-    // // testings and try-outs
-    // RetrySettings retrySettings = ServiceOptions.getDefaultRetrySettings();
-    // retrySettings.getTotalTimeout();
-    // ServiceOptions.getDefaultProjectId();
-    // // ServiceOptions.getDefaultProjectId();
-    // LanguageServiceStubSettings.Builder languageServiceSettingsBuilder =
-    //     LanguageServiceStubSettings.newBuilder();
-    //
-    // // for each methods
-    // languageServiceSettingsBuilder
-    //     .analyzeSentimentSettings()
-    //     .getRetrySettings()
-    //     .toBuilder()
-    //     .setTotalTimeout(retrySettings.getTotalTimeout())
-    //     // .setTotalTimeout(Duration.ofSeconds(30))
-    //     .build();
-    // languageServiceSettingsBuilder
-    //     .analyzeSentimentSettings()
-    //     .setRetrySettings(retrySettings);
-    // languageServiceSettingsBuilder.annotateTextSettings().getRetrySettings().toBuilder().setTotalTimeout(retrySettings.getTotalTimeout());
-    //
-    // languageServiceSettingsBuilder.unaryMethodSettingsBuilders().forEach(
-    //     builder -> {
-    //       Set<Code> retryableCodes = builder.getRetryableCodes();
-    //     }
-    // );
-
-
-    // // // languageServiceSettingsBuilder.analyzeSyntaxSettings().setRetryableCodes();
-    // // RetrySettings retrySettings = languageServiceSettingsBuilder
-    // //     .analyzeSentimentSettings()
-    // //     .getRetrySettings()
-    // //     .toBuilder()
-    // //     .setTotalTimeout(Duration.ofSeconds(30))
-    // //     .build();
-    // // // ApiFunction<UnaryCallSettings.Builder<?, ?>, Void> settingsUpdater
-    // // RetrySettings.Builder unaryCallSettings= UnaryCallSettings.newUnaryCallSettingsBuilder().getRetrySettings().toBuilder().setTotalTimeout(Duration.ofSeconds(30));
-    // // // ApiFunction<UnaryCallSettings.Builder<?, ?>, Void> settingsUpdater = () -> unaryCallSettings;
-    // // languageServiceSettingsBuilder.applyToAllUnaryMethods();
-    // LanguageServiceStubSettings languageServiceSettings = languageServiceSettingsBuilder.build();
-    //
-    //
-    // LanguageServiceSettings settings = LanguageServiceSettings.create(
-    //     languageServiceSettings).toBuilder()
-    //     .setCredentialsProvider(this.credentialsProvider)
-    //     .setQuotaProjectId(this.projectIdProvider.getProjectId())
-    //     .setBackgroundExecutorProvider(provider)
-    //     .build();
-    // // UnaryCallSettings<AnalyzeEntitiesRequest, AnalyzeEntitiesResponse> unaryCallSettings = clientSettings.analyzeEntitiesSettings();
-
-
-    // -------------------
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
   }

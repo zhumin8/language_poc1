@@ -14,25 +14,17 @@ public class UserAgentHeaderProvider implements HeaderProvider {
     this.headers = Collections.singletonMap("user-agent", this.userAgent);
   }
 
-  /**
-   * Returns the "user-agent" header whose value should be added to the google-cloud-java REST API
-   * calls. e.g., {@code user-agent: Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
-   */
   @Override
   public Map<String, String> getHeaders() {
     return this.headers;
   }
 
-  /**
-   * Returns the "user-agent" header value which should be added to the google-cloud-java REST API
-   * calls. e.g., {@code Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
-   *
-   * @return the user agent string.
-   */
   public String getUserAgent() {
     return this.userAgent;
   }
 
+  // copied from core, altered header content to track this project.
+  // could also just use the core one, depending on where to locate this project
   private String computeUserAgent(Class<?> clazz) {
     String[] packageTokens = clazz.getPackage().getName().split("\\.");
     String springLibrary = "spring-cloud-autogen-config-" + packageTokens[packageTokens.length - 1];
