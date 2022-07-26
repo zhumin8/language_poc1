@@ -16,6 +16,8 @@ public class LanguageProperties implements CredentialsSupplier {
 
   private Integer executorThreadCount;
 
+  private boolean useRest = false;
+
   @Override
   public Credentials getCredentials() {
     return this.credentials;
@@ -35,5 +37,9 @@ public class LanguageProperties implements CredentialsSupplier {
 
   public void setExecutorThreadCount(int executorThreadCount) {
     this.executorThreadCount = executorThreadCount;
+  }
+
+  public boolean isUseRest() {
+    return useRest;
   }
 }

@@ -16,12 +16,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Create client with client library default setting, except:
- * - set credentialsProvider, so user/service account/compute engine key can be intake from spring
- * property "spring.cloud.gcp.credentials.location/encoded-key"
- * - set HeaderProvider for internal metrics
- * - set optional quotaProjectId, this overrides projectId obtained from credentials when present
- * - set ExecutorThreadCount when present, sets to client library default if not specified (not tested yet)
+ * Create client with client library default setting, except: - set credentialsProvider, so
+ * user/service account/compute engine key can be intake from spring property
+ * "spring.cloud.gcp.credentials.location/encoded-key" - set HeaderProvider for internal metrics -
+ * set optional quotaProjectId, this overrides projectId obtained from credentials when present -
+ * set ExecutorThreadCount when present, sets to client library default if not specified (not tested
+ * yet)
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(LanguageServiceClient.class)
@@ -32,7 +32,7 @@ public class LanguageAutoConfig {
   private static final Log LOGGER = LogFactory.getLog(LanguageAutoConfig.class);
   private final LanguageProperties clientProperties;
 
-  public LanguageAutoConfig(LanguageProperties properties){
+  public LanguageAutoConfig(LanguageProperties properties) {
     this.clientProperties = properties;
   }
 
@@ -46,17 +46,19 @@ public class LanguageAutoConfig {
 
   @Bean
   @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient(CredentialsProvider credentialsProvider) throws IOException {
+  public LanguageServiceClient languageServiceClient(CredentialsProvider credentialsProvider)
+      throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
         LanguageServiceSettings.newBuilder()
-        .setCredentialsProvider(credentialsProvider)
-        // with this header provider:
-        // user-agent: Spring-autoconfig//3.2.1 spring-cloud-autogen-config-[packagename]/3.2.1;
-        // with default, Map<String, String> headersMap = language.getSettings().getHeaderProvider().getHeaders();
-        // is empty map.
-        .setHeaderProvider(new UserAgentHeaderProvider(this.getClass()));// custom provider class.
-            // .setEndpoint("language.googleapis.com:443")
+            .setCredentialsProvider(credentialsProvider)
+            // with this header provider:
+            // user-agent: Spring-autoconfig//3.2.1 spring-cloud-autogen-config-[packagename]/3.2.1;
+            // with default, Map<String, String> headersMap = language.getSettings().getHeaderProvider().getHeaders();
+            // is empty map.
+            .setHeaderProvider(
+                new UserAgentHeaderProvider(this.getClass()));// custom provider class.
+    // .setEndpoint("language.googleapis.com:443")
 
     // this only looks in "spring.cloud.gcp.language.quotaProjectId", if null just leave empty
     // client lib will look for ADC projectId. "spring.cloud.gcp.project-id" is not used.
@@ -64,31 +66,32 @@ public class LanguageAutoConfig {
     // https://github.com/googleapis/gax-java/blob/main/gax/src/main/java/com/google/api/gax/rpc/ClientContext.java#L170-L176
     if (clientProperties.getQuotaProjectId() != null) {
       clientSettingsBuilder.setQuotaProjectId(clientProperties.getQuotaProjectId());
+      LOGGER.info("Quota project id set to: " + clientProperties.getQuotaProjectId()
+          + ", this overrides project id from credentials.");
     }
 
     if (clientProperties.getExecutorThreadCount() != null) {
 
       ExecutorProvider executorProvider = LanguageServiceSettings.defaultExecutorProviderBuilder()
           .setExecutorThreadCount(clientProperties.getExecutorThreadCount()).build();
-      // TransportChannelProvider transportChannelProvider = LanguageServiceStubSettings.defaultTransportChannelProvider()
-      //     .withExecutor((Executor) executorProvider);
       clientSettingsBuilder
-        .setBackgroundExecutorProvider(executorProvider);
-      // https://github.com/googleapis/gax-java/blob/main/gax/src/main/java/com/google/api/gax/rpc/ClientSettings.java#L160-L176
-      // https://github.com/googleapis/gax-java/blob/main/gax/src/main/java/com/google/api/gax/rpc/ClientContext.java#L178-L184
-      // .setTransportChannelProvider(transportChannelProvider)
+          .setBackgroundExecutorProvider(executorProvider);
     }
 
+    // To use REST (HTTP1.1/JSON) transport (instead of gRPC) for sending and receiving requests over
+    // can set a property to enable this if specified, but seems too niche usecase?
+    if (clientProperties.isUseRest()) {
+      clientSettingsBuilder.setTransportChannelProvider(
+          LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
+    }
 
     // // for each method, set retry settings.
     // // - is this too much to expose to users?
     // // - or set a retrysettings bean with defaults -- allow users to override.
-    // // Do not set retry settings, because each method
+    // // DO NOT set retry settings, because each method
     // // has own set of default retry settings/ or no retry. Too much lower level details to expose.
     // clientSettingsBuilder.annotateTextSettings().getRetrySettings().toBuilder().setTotalTimeout(
     //     Duration.ofMillis(600000L));
-
-
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
   }
