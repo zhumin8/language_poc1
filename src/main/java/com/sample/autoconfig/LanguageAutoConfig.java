@@ -2,6 +2,8 @@ package com.sample.autoconfig;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
@@ -14,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.threeten.bp.Duration;
 
 /**
  * Create client with client library default setting, except: - set credentialsProvider, so
@@ -44,14 +47,26 @@ public class LanguageAutoConfig {
     return new DefaultCredentialsProvider(this.clientProperties);
   }
 
+  // include service name in the bean name to avoid conflict.
+  // example of conflict:
   @Bean
   @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient(CredentialsProvider credentialsProvider)
+  public TransportChannelProvider defaultLanguageTransportChannelProvider() {
+    return LanguageServiceSettings.defaultTransportChannelProvider();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public LanguageServiceClient languageServiceClient(CredentialsProvider credentialsProvider,
+      TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
         LanguageServiceSettings.newBuilder()
             .setCredentialsProvider(credentialsProvider)
+            // default transport channel provider, allow user to override bean for example to configure a proxy
+            // https://github.com/googleapis/google-cloud-java#configuring-a-proxy
+            .setTransportChannelProvider(defaultTransportChannelProvider)
             // with this header provider:
             // user-agent: Spring-autoconfig//3.2.1 spring-cloud-autogen-config-[packagename]/3.2.1;
             // with default, Map<String, String> headersMap = language.getSettings().getHeaderProvider().getHeaders();
@@ -85,13 +100,23 @@ public class LanguageAutoConfig {
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
 
-    // // for each method, set retry settings.
-    // // - is this too much to expose to users?
-    // // - or set a retrysettings bean with defaults -- allow users to override.
-    // // DO NOT set retry settings, because each method
-    // // has own set of default retry settings/ or no retry. Too much lower level details to expose.
-    // clientSettingsBuilder.annotateTextSettings().getRetrySettings().toBuilder().setTotalTimeout(
-    //     Duration.ofMillis(600000L));
+    // for each method, set retry settings.
+    // Useful settings for users. should expose settings for each method.
+    // If property not set, set to default -- need to access from gapic-context for each method.
+
+    // TODO: check gapic lib, if code no retry has this?
+    RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings().getRetrySettings()
+        .toBuilder()
+        .setInitialRetryDelay(this.clientProperties.getAnnotateTextInitialRetryDelay() == null ? Duration.ofMillis(100L): this.clientProperties.getAnnotateTextMaxRetryDelay())
+        .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRetryDelayMultiplier() == null ? 1.3 : this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
+        .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay() == null ? Duration.ofMillis(60000L) : this.clientProperties.getAnnotateTextMaxRetryDelay())
+        .setInitialRpcTimeout(this.clientProperties.getAnntateTextInitialRpcTimeout() == null ? Duration.ofMillis(600000L) : this.clientProperties.getAnntateTextInitialRpcTimeout())
+        .setRpcTimeoutMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier() == null ? 1.0 : this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
+        .setMaxRpcTimeout(this.clientProperties.getAnntateTextMaxRpcTimeout() == null ? Duration.ofMillis(600000L) : this.clientProperties.getAnntateTextMaxRpcTimeout())
+        .setTotalTimeout(this.clientProperties.getAnntateTextTotalTimeout() == null ? Duration.ofMillis(600000L) : this.clientProperties.getAnntateTextTotalTimeout())
+        .build();
+    clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextSettingsRetrySettings);
+    // as sample, only set for one method, in real code, should set for all applicable methods.
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
   }

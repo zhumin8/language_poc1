@@ -4,6 +4,7 @@ import com.google.cloud.spring.core.Credentials;
 import com.google.cloud.spring.core.CredentialsSupplier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.threeten.bp.Duration;
 
 @ConfigurationProperties("spring.cloud.gcp.language")
 public class LanguageProperties implements CredentialsSupplier {
@@ -17,6 +18,15 @@ public class LanguageProperties implements CredentialsSupplier {
   private Integer executorThreadCount;
 
   private boolean useRest = false;
+
+  // retry setting
+  private Duration annotateTextInitialRetryDelay;
+  private Double annotateTextRetryDelayMultiplier;
+  private Duration annotateTextMaxRetryDelay;
+  private Duration anntateTextInitialRpcTimeout;
+  private Double annotateTextRpcTimeoutMultiplier;
+  private Duration anntateTextMaxRpcTimeout;
+  private Duration anntateTextTotalTimeout;
 
   @Override
   public Credentials getCredentials() {
@@ -41,5 +51,33 @@ public class LanguageProperties implements CredentialsSupplier {
 
   public boolean isUseRest() {
     return useRest;
+  }
+
+  public Duration getAnnotateTextInitialRetryDelay() {
+    return annotateTextInitialRetryDelay;
+  }
+
+  public Double getAnnotateTextRetryDelayMultiplier() {
+    return annotateTextRetryDelayMultiplier;
+  }
+
+  public Duration getAnnotateTextMaxRetryDelay() {
+    return annotateTextMaxRetryDelay;
+  }
+
+  public Duration getAnntateTextInitialRpcTimeout() {
+    return anntateTextInitialRpcTimeout;
+  }
+
+  public Double getAnnotateTextRpcTimeoutMultiplier() {
+    return annotateTextRpcTimeoutMultiplier;
+  }
+
+  public Duration getAnntateTextMaxRpcTimeout() {
+    return anntateTextMaxRpcTimeout;
+  }
+
+  public Duration getAnntateTextTotalTimeout() {
+    return anntateTextTotalTimeout;
   }
 }
