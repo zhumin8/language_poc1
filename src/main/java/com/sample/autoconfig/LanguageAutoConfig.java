@@ -7,6 +7,7 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +35,27 @@ public class LanguageAutoConfig {
 
   private static final Log LOGGER = LogFactory.getLog(LanguageAutoConfig.class);
   private final LanguageProperties clientProperties;
+
+
+  private static final ImmutableMap<String, RetrySettings> RETRY_PARAM_DEFINITIONS;
+
+  static {
+    ImmutableMap.Builder<String, RetrySettings> definitions = ImmutableMap.builder();
+    RetrySettings settings = null;
+    settings =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofMillis(100L))
+            .setRetryDelayMultiplier(1.3)
+            .setMaxRetryDelay(Duration.ofMillis(60000L))
+            .setInitialRpcTimeout(Duration.ofMillis(600000L))
+            .setRpcTimeoutMultiplier(1.0)
+            .setMaxRpcTimeout(Duration.ofMillis(600000L))
+            .setTotalTimeout(Duration.ofMillis(600000L))
+            .build();
+    definitions.put("retry_policy_0_params", settings);
+    RETRY_PARAM_DEFINITIONS = definitions.build();
+  }
+
 
   public LanguageAutoConfig(LanguageProperties properties) {
     this.clientProperties = properties;
@@ -105,17 +127,35 @@ public class LanguageAutoConfig {
     // If property not set, set to default -- need to access from gapic-context for each method.
 
     // TODO: check gapic lib, if code no retry has this?
-    RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings().getRetrySettings()
+
+    RetrySettings defaultRetrySettings = RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params");
+    RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings()
+        .getRetrySettings()
         .toBuilder()
-        .setInitialRetryDelay(this.clientProperties.getAnnotateTextInitialRetryDelay() == null ? Duration.ofMillis(100L): this.clientProperties.getAnnotateTextMaxRetryDelay())
-        .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRetryDelayMultiplier() == null ? 1.3 : this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-        .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay() == null ? Duration.ofMillis(60000L) : this.clientProperties.getAnnotateTextMaxRetryDelay())
-        .setInitialRpcTimeout(this.clientProperties.getAnntateTextInitialRpcTimeout() == null ? Duration.ofMillis(600000L) : this.clientProperties.getAnntateTextInitialRpcTimeout())
-        .setRpcTimeoutMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier() == null ? 1.0 : this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-        .setMaxRpcTimeout(this.clientProperties.getAnntateTextMaxRpcTimeout() == null ? Duration.ofMillis(600000L) : this.clientProperties.getAnntateTextMaxRpcTimeout())
-        .setTotalTimeout(this.clientProperties.getAnntateTextTotalTimeout() == null ? Duration.ofMillis(600000L) : this.clientProperties.getAnntateTextTotalTimeout())
+        .setInitialRetryDelay(this.clientProperties.getAnnotateTextInitialRetryDelay() == null
+            ? defaultRetrySettings.getInitialRetryDelay()
+            : this.clientProperties.getAnnotateTextMaxRetryDelay())
+        .setRetryDelayMultiplier(
+            this.clientProperties.getAnnotateTextRetryDelayMultiplier() == null ? defaultRetrySettings.getRetryDelayMultiplier()
+                : this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
+        .setMaxRetryDelay(
+            this.clientProperties.getAnnotateTextMaxRetryDelay() == null ? defaultRetrySettings.getMaxRetryDelay()
+                : this.clientProperties.getAnnotateTextMaxRetryDelay())
+        .setInitialRpcTimeout(
+            this.clientProperties.getAnntateTextInitialRpcTimeout() == null ? defaultRetrySettings.getInitialRpcTimeout()
+                : this.clientProperties.getAnntateTextInitialRpcTimeout())
+        .setRpcTimeoutMultiplier(
+            this.clientProperties.getAnnotateTextRpcTimeoutMultiplier() == null ? defaultRetrySettings.getRpcTimeoutMultiplier()
+                : this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
+        .setMaxRpcTimeout(
+            this.clientProperties.getAnntateTextMaxRpcTimeout() == null ? defaultRetrySettings.getMaxRpcTimeout()
+                : this.clientProperties.getAnntateTextMaxRpcTimeout())
+        .setTotalTimeout(
+            this.clientProperties.getAnntateTextTotalTimeout() == null ? defaultRetrySettings.getTotalTimeout()
+                : this.clientProperties.getAnntateTextTotalTimeout())
         .build();
-    clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextSettingsRetrySettings);
+    clientSettingsBuilder.annotateTextSettings()
+        .setRetrySettings(annotateTextSettingsRetrySettings);
     // as sample, only set for one method, in real code, should set for all applicable methods.
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
