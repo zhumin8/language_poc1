@@ -7,7 +7,6 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
-import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,7 +16,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.threeten.bp.Duration;
 
 /**
  * Create client with client library default setting, except: - set credentialsProvider, so
@@ -37,24 +35,27 @@ public class LanguageAutoConfig {
   private final LanguageProperties clientProperties;
 
 
-  private static final ImmutableMap<String, RetrySettings> RETRY_PARAM_DEFINITIONS;
-
-  static {
-    ImmutableMap.Builder<String, RetrySettings> definitions = ImmutableMap.builder();
-    RetrySettings settings = null;
-    settings =
-        RetrySettings.newBuilder()
-            .setInitialRetryDelay(Duration.ofMillis(100L))
-            .setRetryDelayMultiplier(1.3)
-            .setMaxRetryDelay(Duration.ofMillis(60000L))
-            .setInitialRpcTimeout(Duration.ofMillis(600000L))
-            .setRpcTimeoutMultiplier(1.0)
-            .setMaxRpcTimeout(Duration.ofMillis(600000L))
-            .setTotalTimeout(Duration.ofMillis(600000L))
-            .build();
-    definitions.put("retry_policy_0_params", settings);
-    RETRY_PARAM_DEFINITIONS = definitions.build();
-  }
+  // // retry param map for defaults. Not needed directly. For reference here only.
+  // // clear out after settings done.
+  // private static final ImmutableMap<String, RetrySettings> RETRY_PARAM_DEFINITIONS;
+  //
+  // static {
+  //   ImmutableMap.Builder<String, RetrySettings> definitions = ImmutableMap.builder();
+  //   RetrySettings settings = null;
+  //   settings =
+  //       RetrySettings.newBuilder()
+  //           .setInitialRetryDelay(Duration.ofMillis(100L))
+  //           .setRetryDelayMultiplier(1.3)
+  //           .setMaxRetryDelay(Duration.ofMillis(60000L))
+  //           .setInitialRpcTimeout(Duration.ofMillis(600000L))
+  //           .setRpcTimeoutMultiplier(1.0)
+  //           .setMaxRpcTimeout(Duration.ofMillis(600000L))
+  //           .setTotalTimeout(Duration.ofMillis(600000L))
+  //           .build();
+  //   definitions.put("retry_policy_0_params", settings);
+  //   RETRY_PARAM_DEFINITIONS = definitions.build();
+  // }
+  // // end of not needed block
 
 
   public LanguageAutoConfig(LanguageProperties properties) {
@@ -122,37 +123,23 @@ public class LanguageAutoConfig {
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
 
-    // for each method, set retry settings.
+    // Retry Settings: set for each method.
     // Useful settings for users. should expose settings for each method.
     // If property not set, set to default -- need to access from gapic-context for each method.
 
-    // TODO: check gapic lib, if code no retry has this?
-
-    RetrySettings defaultRetrySettings = RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params");
+    // for relevant retry settings, follow logic in:
+    // com.google.api.generator.gapic.composer.common.RetrySettingsComposer.createRetrySettingsExprs
+    // Defaults already set in LanguageProperties. So just set to property values here.
     RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings()
         .getRetrySettings()
         .toBuilder()
-        .setInitialRetryDelay(this.clientProperties.getAnnotateTextInitialRetryDelay() == null
-            ? defaultRetrySettings.getInitialRetryDelay()
-            : this.clientProperties.getAnnotateTextMaxRetryDelay())
-        .setRetryDelayMultiplier(
-            this.clientProperties.getAnnotateTextRetryDelayMultiplier() == null ? defaultRetrySettings.getRetryDelayMultiplier()
-                : this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-        .setMaxRetryDelay(
-            this.clientProperties.getAnnotateTextMaxRetryDelay() == null ? defaultRetrySettings.getMaxRetryDelay()
-                : this.clientProperties.getAnnotateTextMaxRetryDelay())
-        .setInitialRpcTimeout(
-            this.clientProperties.getAnntateTextInitialRpcTimeout() == null ? defaultRetrySettings.getInitialRpcTimeout()
-                : this.clientProperties.getAnntateTextInitialRpcTimeout())
-        .setRpcTimeoutMultiplier(
-            this.clientProperties.getAnnotateTextRpcTimeoutMultiplier() == null ? defaultRetrySettings.getRpcTimeoutMultiplier()
-                : this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-        .setMaxRpcTimeout(
-            this.clientProperties.getAnntateTextMaxRpcTimeout() == null ? defaultRetrySettings.getMaxRpcTimeout()
-                : this.clientProperties.getAnntateTextMaxRpcTimeout())
-        .setTotalTimeout(
-            this.clientProperties.getAnntateTextTotalTimeout() == null ? defaultRetrySettings.getTotalTimeout()
-                : this.clientProperties.getAnntateTextTotalTimeout())
+        .setInitialRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
+        .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
+        .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
+        .setInitialRpcTimeout(this.clientProperties.getAnnotateTextInitialRpcTimeout())
+        .setRpcTimeoutMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
+        .setMaxRpcTimeout(this.clientProperties.getAnnotateTextMaxRpcTimeout())
+        .setTotalTimeout(this.clientProperties.getAnnotateTextTotalTimeout())
         .build();
     clientSettingsBuilder.annotateTextSettings()
         .setRetrySettings(annotateTextSettingsRetrySettings);

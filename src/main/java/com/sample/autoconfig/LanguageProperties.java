@@ -19,14 +19,15 @@ public class LanguageProperties implements CredentialsSupplier {
 
   private boolean useRest = false;
 
-  // retry setting
-  private Duration annotateTextInitialRetryDelay;
-  private Double annotateTextRetryDelayMultiplier;
-  private Duration annotateTextMaxRetryDelay;
-  private Duration anntateTextInitialRpcTimeout;
-  private Double annotateTextRpcTimeoutMultiplier;
-  private Duration anntateTextMaxRpcTimeout;
-  private Duration anntateTextTotalTimeout;
+  // retry settings: for each method, set *relevant* retry settings directly to its default value
+  // only writing out retry settings for one method (AnnotateText) as example
+  private Duration annotateTextInitialRetryDelay = Duration.ofMillis(100L); // do defaults here, or in autoconfig
+  private Double annotateTextRetryDelayMultiplier = 1.3;
+  private Duration annotateTextMaxRetryDelay = Duration.ofMillis(60000L);
+  private Duration annotateTextInitialRpcTimeout = Duration.ofMillis(600000L);
+  private Double annotateTextRpcTimeoutMultiplier = 1.0;
+  private Duration annotateTextMaxRpcTimeout = Duration.ofMillis(600000L);
+  private Duration annotateTextTotalTimeout = Duration.ofMillis(600000L);
 
   @Override
   public Credentials getCredentials() {
@@ -53,6 +54,7 @@ public class LanguageProperties implements CredentialsSupplier {
     return useRest;
   }
 
+  // getter and setters
   public Duration getAnnotateTextInitialRetryDelay() {
     return annotateTextInitialRetryDelay;
   }
@@ -65,19 +67,47 @@ public class LanguageProperties implements CredentialsSupplier {
     return annotateTextMaxRetryDelay;
   }
 
-  public Duration getAnntateTextInitialRpcTimeout() {
-    return anntateTextInitialRpcTimeout;
+  public Duration getAnnotateTextInitialRpcTimeout() {
+    return annotateTextInitialRpcTimeout;
   }
 
   public Double getAnnotateTextRpcTimeoutMultiplier() {
     return annotateTextRpcTimeoutMultiplier;
   }
 
-  public Duration getAnntateTextMaxRpcTimeout() {
-    return anntateTextMaxRpcTimeout;
+  public Duration getAnnotateTextMaxRpcTimeout() {
+    return annotateTextMaxRpcTimeout;
   }
 
-  public Duration getAnntateTextTotalTimeout() {
-    return anntateTextTotalTimeout;
+  public Duration getAnnotateTextTotalTimeout() {
+    return annotateTextTotalTimeout;
+  }
+
+  public void setAnnotateTextInitialRetryDelay(Duration annotateTextInitialRetryDelay) {
+    this.annotateTextInitialRetryDelay = annotateTextInitialRetryDelay;
+  }
+
+  public void setAnnotateTextRetryDelayMultiplier(Double annotateTextRetryDelayMultiplier) {
+    this.annotateTextRetryDelayMultiplier = annotateTextRetryDelayMultiplier;
+  }
+
+  public void setAnnotateTextMaxRetryDelay(Duration annotateTextMaxRetryDelay) {
+    this.annotateTextMaxRetryDelay = annotateTextMaxRetryDelay;
+  }
+
+  public void setAnnotateTextInitialRpcTimeout(Duration annotateTextInitialRpcTimeout) {
+    this.annotateTextInitialRpcTimeout = annotateTextInitialRpcTimeout;
+  }
+
+  public void setAnnotateTextRpcTimeoutMultiplier(Double annotateTextRpcTimeoutMultiplier) {
+    this.annotateTextRpcTimeoutMultiplier = annotateTextRpcTimeoutMultiplier;
+  }
+
+  public void setAnnotateTextMaxRpcTimeout(Duration annotateTextMaxRpcTimeout) {
+    this.annotateTextMaxRpcTimeout = annotateTextMaxRpcTimeout;
+  }
+
+  public void setAnnotateTextTotalTimeout(Duration annotateTextTotalTimeout) {
+    this.annotateTextTotalTimeout = annotateTextTotalTimeout;
   }
 }

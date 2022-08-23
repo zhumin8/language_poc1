@@ -4,6 +4,9 @@ import com.google.api.gax.rpc.HeaderProvider;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * A util class to set custom headers for metrics. This can be moved to some shared location like Gax.
+ */
 public class UserAgentHeaderProvider implements HeaderProvider {
   private String userAgent;
 
