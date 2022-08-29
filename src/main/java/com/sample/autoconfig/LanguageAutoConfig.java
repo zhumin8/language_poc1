@@ -1,15 +1,20 @@
 package com.sample.autoconfig;
+// TODO: package name needs to end with a service-specific suffix if we want to use the UserAgentHeaderProvider
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
 import java.io.IOException;
+import java.util.Collections;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -65,8 +70,9 @@ public class LanguageAutoConfig {
 
   // benefit of configuring as a separate bean: could be easier to override if needed?
   @Bean
-  @ConditionalOnMissingBean
-  public CredentialsProvider googleCredentials() throws IOException {
+  @ConditionalOnMissingBean (name="googleLanguageCredentials")  // TODO: check which way is correct -- name vs qualifier
+  @Qualifier ("googleLanguageCredentials")
+  public CredentialsProvider googleLanguageCredentials() throws IOException {
     return new DefaultCredentialsProvider(this.clientProperties);
   }
 
@@ -80,7 +86,7 @@ public class LanguageAutoConfig {
 
   @Bean
   @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient(CredentialsProvider credentialsProvider,
+  public LanguageServiceClient languageServiceClient(@Qualifier("googleLanguageCredentials") CredentialsProvider credentialsProvider,
       TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
 
@@ -94,8 +100,7 @@ public class LanguageAutoConfig {
             // user-agent: Spring-autoconfig//3.2.1 spring-cloud-autogen-config-[packagename]/3.2.1;
             // with default, Map<String, String> headersMap = language.getSettings().getHeaderProvider().getHeaders();
             // is empty map.
-            .setHeaderProvider(
-                new UserAgentHeaderProvider(this.getClass()));// custom provider class.
+            .setHeaderProvider(computeUserAgentString());// custom provider class.
     // .setEndpoint("language.googleapis.com:443")
 
     // this only looks in "spring.cloud.gcp.language.quotaProjectId", if null just leave empty
@@ -133,6 +138,7 @@ public class LanguageAutoConfig {
     RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings()
         .getRetrySettings()
         .toBuilder()
+            // we either need to make sure client library gets generated together with Spring autoconfig, OR to avoid setting defaults (only set value if user provided).
         .setInitialRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
         .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
         .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
@@ -146,5 +152,13 @@ public class LanguageAutoConfig {
     // as sample, only set for one method, in real code, should set for all applicable methods.
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
+  }
+
+  private HeaderProvider userAgentHeaderProvider() {
+    String springLibrary = "spring-cloud-autogen-config-language";
+    String version = this.getClass().getPackage().getImplementationVersion();
+
+    // see concord tools.yaml google3/cloud/analysis/concord/configs/api/attribution-prod/tools.yaml?rcl=469347651&l=428
+    return () -> Collections.singletonMap("user-agent", "Spring-autoconfig/" + version + " " + springLibrary + "/" + version);
   }
 }

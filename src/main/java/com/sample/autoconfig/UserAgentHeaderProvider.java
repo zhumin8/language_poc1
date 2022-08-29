@@ -6,7 +6,7 @@ import java.util.Map;
 
 /**
  * A util class to set custom headers for metrics. This can be moved to some shared location like Gax.
- */
+
 public class UserAgentHeaderProvider implements HeaderProvider {
   private String userAgent;
 
@@ -30,9 +30,10 @@ public class UserAgentHeaderProvider implements HeaderProvider {
   // could also just use the core one, depending on where to locate this project
   private String computeUserAgent(Class<?> clazz) {
     String[] packageTokens = clazz.getPackage().getName().split("\\.");
-    String springLibrary = "spring-cloud-autogen-config-" + packageTokens[packageTokens.length - 1];
+    String springLibrary = "spring-cloud-autogen-config-languange"
     String version = this.getClass().getPackage().getImplementationVersion();
 
     return "Spring-autoconfig/" + version + " " + springLibrary + "/" + version;
   }
 }
+*/
