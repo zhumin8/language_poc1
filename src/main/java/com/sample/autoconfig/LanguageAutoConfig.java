@@ -1,15 +1,18 @@
-package com.sample.autoconfig;
+package com.sample.autoconfig; // generated as client-lib-package-name.spring
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
 import java.io.IOException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -26,12 +29,13 @@ import org.springframework.context.annotation.Configuration;
  * yet)
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass(LanguageServiceClient.class)
+@ConditionalOnClass(LanguageServiceClient.class) // When lib has multiple services,
+// an antoconfig class per service will be created
 @ConditionalOnProperty(value = "spring.cloud.gcp.language.enabled", matchIfMissing = true)
 @EnableConfigurationProperties(LanguageProperties.class)
 public class LanguageAutoConfig {
 
-  private static final Log LOGGER = LogFactory.getLog(LanguageAutoConfig.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LanguageAutoConfig.class);
   private final LanguageProperties clientProperties;
 
 
@@ -63,25 +67,27 @@ public class LanguageAutoConfig {
   }
 
 
-  // benefit of configuring as a separate bean: could be easier to override if needed?
+  // benefit of configuring as a separate bean: could be easier to override if needed
+  // need identifier of service in the name as there can be different credentials per client library
+  // Can it be different per service then??
   @Bean
-  @ConditionalOnMissingBean
-  public CredentialsProvider googleCredentials() throws IOException {
+  @ConditionalOnMissingBean(name = "languageServiceCredentials") // set name as [serviceName]Credentials
+  public CredentialsProvider languageServiceCredentials() throws IOException { // include service name.
     return new DefaultCredentialsProvider(this.clientProperties);
   }
 
   // include service name in the bean name to avoid conflict.
   // example of conflict:
   @Bean
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(name = "languageTransportChannelProvider")
   public TransportChannelProvider defaultLanguageTransportChannelProvider() {
     return LanguageServiceSettings.defaultTransportChannelProvider();
   }
 
   @Bean
   @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient(CredentialsProvider credentialsProvider,
-      TransportChannelProvider defaultTransportChannelProvider)
+  public LanguageServiceClient languageServiceClient(@Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
+      @Qualifier("languageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
@@ -95,14 +101,14 @@ public class LanguageAutoConfig {
             // with default, Map<String, String> headersMap = language.getSettings().getHeaderProvider().getHeaders();
             // is empty map.
             .setHeaderProvider(
-                new UserAgentHeaderProvider(this.getClass()));// custom provider class.
+                userAgentHeaderProvider());// custom provider class.
     // .setEndpoint("language.googleapis.com:443")
 
     // this only looks in "spring.cloud.gcp.language.quotaProjectId", if null just leave empty
     // client lib will look for ADC projectId. "spring.cloud.gcp.project-id" is not used.
     // quota project when set, a custom set quota project id takes priority over one detected by credentials:
     // https://github.com/googleapis/gax-java/blob/main/gax/src/main/java/com/google/api/gax/rpc/ClientContext.java#L170-L176
-    if (clientProperties.getQuotaProjectId() != null) {
+    if (this.clientProperties.getQuotaProjectId() != null) {
       clientSettingsBuilder.setQuotaProjectId(clientProperties.getQuotaProjectId());
       LOGGER.info("Quota project id set to: " + clientProperties.getQuotaProjectId()
           + ", this overrides project id from credentials.");
@@ -133,7 +139,8 @@ public class LanguageAutoConfig {
     RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings()
         .getRetrySettings()
         .toBuilder()
-        .setInitialRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
+        // we either need to make sure client library gets generated together with Spring autoconfig, OR to avoid setting defaults (only set value if user provided).
+        .setInitialRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay()) // relay on timing of publishing same v with client lib
         .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
         .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
         .setInitialRpcTimeout(this.clientProperties.getAnnotateTextInitialRpcTimeout())
@@ -146,5 +153,14 @@ public class LanguageAutoConfig {
     // as sample, only set for one method, in real code, should set for all applicable methods.
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
+  }
+
+  // custom user agent header provider.
+  private HeaderProvider userAgentHeaderProvider() {
+    String springLibrary = "spring-cloud-autogen-config-language"; // get service name directly
+    String version = this.getClass().getPackage().getImplementationVersion(); // META-INF/MANIFEST.MF
+
+    // see concord tools.yaml google3/cloud/analysis/concord/configs/api/attribution-prod/tools.yaml?rcl=469347651&l=428
+    return () -> Collections.singletonMap("user-agent", "Spring-autoconfig/" + version + " " + springLibrary + "/" + version);
   }
 }

@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.threeten.bp.Duration;
 
-@ConfigurationProperties("spring.cloud.gcp.language")
+@ConfigurationProperties("spring.cloud.gcp.language") // branding considerations: google.cloud.spring.autoconfig.language?
 public class LanguageProperties implements CredentialsSupplier {
 
   // Overrides the GCP OAuth2 credentials specified in the Core module.
