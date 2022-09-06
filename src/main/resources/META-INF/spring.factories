@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-LanguageAutoConfig
+com.google.cloud.language.v1.spring.LanguageServiceSpringAutoConfiguration
