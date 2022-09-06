@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(LanguageServiceClient.class) // When lib has multiple services,
 // an antoconfig class per service will be created
-@ConditionalOnProperty(value = "spring.cloud.gcp.language.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "spring.cloud.gcp.language.language-service.enabled", matchIfMissing = true)
 @EnableConfigurationProperties(LanguageProperties.class)
 public class LanguageAutoConfig {
 
