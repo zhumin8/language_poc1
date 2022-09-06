@@ -1,4 +1,4 @@
-package com.sample.autoconfig;
+package com.google.cloud.language.v1;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
