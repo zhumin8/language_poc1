@@ -21,6 +21,9 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.rpc.UnaryCallSettings;
+import com.google.cloud.language.v1.AnnotateTextRequest;
+import com.google.cloud.language.v1.AnnotateTextResponse;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
@@ -104,6 +107,205 @@ public class LanguageServiceSpringAutoConfiguration {
       clientSettingsBuilder.setTransportChannelProvider(
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
+
+    RetrySettings.Builder analyzeSentimentRetrySettingBuilder =
+        clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings().toBuilder();
+    if (this.clientProperties.getAnalyzeSentimentInitialRetryDelay() != null) {
+      analyzeSentimentRetrySettingBuilder.setInitialRetryDelay(
+          this.clientProperties.getAnalyzeSentimentInitialRetryDelay());
+    }
+    if (this.clientProperties.getAnalyzeSentimentRetryDelayMultiplier() != null) {
+      analyzeSentimentRetrySettingBuilder.setRetryDelayMultiplier(
+          this.clientProperties.getAnalyzeSentimentRetryDelayMultiplier());
+    }
+    if (this.clientProperties.getAnalyzeSentimentMaxRetryDelay() != null) {
+      analyzeSentimentRetrySettingBuilder.setMaxRetryDelay(
+          this.clientProperties.getAnalyzeSentimentMaxRetryDelay());
+    }
+    if (this.clientProperties.getAnalyzeSentimentInitialRpcTimeout() != null) {
+      analyzeSentimentRetrySettingBuilder.setInitialRpcTimeout(
+          this.clientProperties.getAnalyzeSentimentInitialRpcTimeout());
+    }
+    if (this.clientProperties.getAnalyzeSentimentRpcTimeoutMultiplier() != null) {
+      analyzeSentimentRetrySettingBuilder.setRpcTimeoutMultiplier(
+          this.clientProperties.getAnalyzeSentimentRpcTimeoutMultiplier());
+    }
+    if (this.clientProperties.getAnalyzeSentimentMaxRpcTimeout() != null) {
+      analyzeSentimentRetrySettingBuilder.setMaxRpcTimeout(
+          this.clientProperties.getAnalyzeSentimentMaxRpcTimeout());
+    }
+    if (this.clientProperties.getAnalyzeSentimentTotalTimeout() != null) {
+      analyzeSentimentRetrySettingBuilder.setTotalTimeout(
+          this.clientProperties.getAnalyzeSentimentTotalTimeout());
+    }
+    clientSettingsBuilder
+        .analyzeSentimentSettings()
+        .setRetrySettings(analyzeSentimentRetrySettingBuilder.build());
+    RetrySettings.Builder analyzeEntitiesRetrySettingBuilder =
+        clientSettingsBuilder.analyzeEntitiesSettings().getRetrySettings().toBuilder();
+    if (this.clientProperties.getAnalyzeEntitiesInitialRetryDelay() != null) {
+      analyzeEntitiesRetrySettingBuilder.setInitialRetryDelay(
+          this.clientProperties.getAnalyzeEntitiesInitialRetryDelay());
+    }
+    if (this.clientProperties.getAnalyzeEntitiesRetryDelayMultiplier() != null) {
+      analyzeEntitiesRetrySettingBuilder.setRetryDelayMultiplier(
+          this.clientProperties.getAnalyzeEntitiesRetryDelayMultiplier());
+    }
+    if (this.clientProperties.getAnalyzeEntitiesMaxRetryDelay() != null) {
+      analyzeEntitiesRetrySettingBuilder.setMaxRetryDelay(
+          this.clientProperties.getAnalyzeEntitiesMaxRetryDelay());
+    }
+    if (this.clientProperties.getAnalyzeEntitiesInitialRpcTimeout() != null) {
+      analyzeEntitiesRetrySettingBuilder.setInitialRpcTimeout(
+          this.clientProperties.getAnalyzeEntitiesInitialRpcTimeout());
+    }
+    if (this.clientProperties.getAnalyzeEntitiesRpcTimeoutMultiplier() != null) {
+      analyzeEntitiesRetrySettingBuilder.setRpcTimeoutMultiplier(
+          this.clientProperties.getAnalyzeEntitiesRpcTimeoutMultiplier());
+    }
+    if (this.clientProperties.getAnalyzeEntitiesMaxRpcTimeout() != null) {
+      analyzeEntitiesRetrySettingBuilder.setMaxRpcTimeout(
+          this.clientProperties.getAnalyzeEntitiesMaxRpcTimeout());
+    }
+    if (this.clientProperties.getAnalyzeEntitiesTotalTimeout() != null) {
+      analyzeEntitiesRetrySettingBuilder.setTotalTimeout(
+          this.clientProperties.getAnalyzeEntitiesTotalTimeout());
+    }
+    clientSettingsBuilder
+        .analyzeEntitiesSettings()
+        .setRetrySettings(analyzeEntitiesRetrySettingBuilder.build());
+    RetrySettings.Builder analyzeEntitySentimentRetrySettingBuilder =
+        clientSettingsBuilder.analyzeEntitySentimentSettings().getRetrySettings().toBuilder();
+    if (this.clientProperties.getAnalyzeEntitySentimentInitialRetryDelay() != null) {
+      analyzeEntitySentimentRetrySettingBuilder.setInitialRetryDelay(
+          this.clientProperties.getAnalyzeEntitySentimentInitialRetryDelay());
+    }
+    if (this.clientProperties.getAnalyzeEntitySentimentRetryDelayMultiplier() != null) {
+      analyzeEntitySentimentRetrySettingBuilder.setRetryDelayMultiplier(
+          this.clientProperties.getAnalyzeEntitySentimentRetryDelayMultiplier());
+    }
+    if (this.clientProperties.getAnalyzeEntitySentimentMaxRetryDelay() != null) {
+      analyzeEntitySentimentRetrySettingBuilder.setMaxRetryDelay(
+          this.clientProperties.getAnalyzeEntitySentimentMaxRetryDelay());
+    }
+    if (this.clientProperties.getAnalyzeEntitySentimentInitialRpcTimeout() != null) {
+      analyzeEntitySentimentRetrySettingBuilder.setInitialRpcTimeout(
+          this.clientProperties.getAnalyzeEntitySentimentInitialRpcTimeout());
+    }
+    if (this.clientProperties.getAnalyzeEntitySentimentRpcTimeoutMultiplier() != null) {
+      analyzeEntitySentimentRetrySettingBuilder.setRpcTimeoutMultiplier(
+          this.clientProperties.getAnalyzeEntitySentimentRpcTimeoutMultiplier());
+    }
+    if (this.clientProperties.getAnalyzeEntitySentimentMaxRpcTimeout() != null) {
+      analyzeEntitySentimentRetrySettingBuilder.setMaxRpcTimeout(
+          this.clientProperties.getAnalyzeEntitySentimentMaxRpcTimeout());
+    }
+    if (this.clientProperties.getAnalyzeEntitySentimentTotalTimeout() != null) {
+      analyzeEntitySentimentRetrySettingBuilder.setTotalTimeout(
+          this.clientProperties.getAnalyzeEntitySentimentTotalTimeout());
+    }
+    clientSettingsBuilder
+        .analyzeEntitySentimentSettings()
+        .setRetrySettings(analyzeEntitySentimentRetrySettingBuilder.build());
+    RetrySettings.Builder analyzeSyntaxRetrySettingBuilder =
+        clientSettingsBuilder.analyzeSyntaxSettings().getRetrySettings().toBuilder();
+    if (this.clientProperties.getAnalyzeSyntaxInitialRetryDelay() != null) {
+      analyzeSyntaxRetrySettingBuilder.setInitialRetryDelay(
+          this.clientProperties.getAnalyzeSyntaxInitialRetryDelay());
+    }
+    if (this.clientProperties.getAnalyzeSyntaxRetryDelayMultiplier() != null) {
+      analyzeSyntaxRetrySettingBuilder.setRetryDelayMultiplier(
+          this.clientProperties.getAnalyzeSyntaxRetryDelayMultiplier());
+    }
+    if (this.clientProperties.getAnalyzeSyntaxMaxRetryDelay() != null) {
+      analyzeSyntaxRetrySettingBuilder.setMaxRetryDelay(
+          this.clientProperties.getAnalyzeSyntaxMaxRetryDelay());
+    }
+    if (this.clientProperties.getAnalyzeSyntaxInitialRpcTimeout() != null) {
+      analyzeSyntaxRetrySettingBuilder.setInitialRpcTimeout(
+          this.clientProperties.getAnalyzeSyntaxInitialRpcTimeout());
+    }
+    if (this.clientProperties.getAnalyzeSyntaxRpcTimeoutMultiplier() != null) {
+      analyzeSyntaxRetrySettingBuilder.setRpcTimeoutMultiplier(
+          this.clientProperties.getAnalyzeSyntaxRpcTimeoutMultiplier());
+    }
+    if (this.clientProperties.getAnalyzeSyntaxMaxRpcTimeout() != null) {
+      analyzeSyntaxRetrySettingBuilder.setMaxRpcTimeout(
+          this.clientProperties.getAnalyzeSyntaxMaxRpcTimeout());
+    }
+    if (this.clientProperties.getAnalyzeSyntaxTotalTimeout() != null) {
+      analyzeSyntaxRetrySettingBuilder.setTotalTimeout(
+          this.clientProperties.getAnalyzeSyntaxTotalTimeout());
+    }
+    clientSettingsBuilder
+        .analyzeSyntaxSettings()
+        .setRetrySettings(analyzeSyntaxRetrySettingBuilder.build());
+    RetrySettings.Builder classifyTextRetrySettingBuilder =
+        clientSettingsBuilder.classifyTextSettings().getRetrySettings().toBuilder();
+    if (this.clientProperties.getClassifyTextInitialRetryDelay() != null) {
+      classifyTextRetrySettingBuilder.setInitialRetryDelay(
+          this.clientProperties.getClassifyTextInitialRetryDelay());
+    }
+    if (this.clientProperties.getClassifyTextRetryDelayMultiplier() != null) {
+      classifyTextRetrySettingBuilder.setRetryDelayMultiplier(
+          this.clientProperties.getClassifyTextRetryDelayMultiplier());
+    }
+    if (this.clientProperties.getClassifyTextMaxRetryDelay() != null) {
+      classifyTextRetrySettingBuilder.setMaxRetryDelay(
+          this.clientProperties.getClassifyTextMaxRetryDelay());
+    }
+    if (this.clientProperties.getClassifyTextInitialRpcTimeout() != null) {
+      classifyTextRetrySettingBuilder.setInitialRpcTimeout(
+          this.clientProperties.getClassifyTextInitialRpcTimeout());
+    }
+    if (this.clientProperties.getClassifyTextRpcTimeoutMultiplier() != null) {
+      classifyTextRetrySettingBuilder.setRpcTimeoutMultiplier(
+          this.clientProperties.getClassifyTextRpcTimeoutMultiplier());
+    }
+    if (this.clientProperties.getClassifyTextMaxRpcTimeout() != null) {
+      classifyTextRetrySettingBuilder.setMaxRpcTimeout(
+          this.clientProperties.getClassifyTextMaxRpcTimeout());
+    }
+    if (this.clientProperties.getClassifyTextTotalTimeout() != null) {
+      classifyTextRetrySettingBuilder.setTotalTimeout(
+          this.clientProperties.getClassifyTextTotalTimeout());
+    }
+    clientSettingsBuilder
+        .classifyTextSettings()
+        .setRetrySettings(classifyTextRetrySettingBuilder.build());
+    RetrySettings.Builder annotateTextRetrySettingBuilder =
+        clientSettingsBuilder.annotateTextSettings().getRetrySettings().toBuilder();
+    if (this.clientProperties.getAnnotateTextInitialRetryDelay() != null) {
+      annotateTextRetrySettingBuilder.setInitialRetryDelay(
+          this.clientProperties.getAnnotateTextInitialRetryDelay());
+    }
+    if (this.clientProperties.getAnnotateTextRetryDelayMultiplier() != null) {
+      annotateTextRetrySettingBuilder.setRetryDelayMultiplier(
+          this.clientProperties.getAnnotateTextRetryDelayMultiplier());
+    }
+    if (this.clientProperties.getAnnotateTextMaxRetryDelay() != null) {
+      annotateTextRetrySettingBuilder.setMaxRetryDelay(
+          this.clientProperties.getAnnotateTextMaxRetryDelay());
+    }
+    if (this.clientProperties.getAnnotateTextInitialRpcTimeout() != null) {
+      annotateTextRetrySettingBuilder.setInitialRpcTimeout(
+          this.clientProperties.getAnnotateTextInitialRpcTimeout());
+    }
+    if (this.clientProperties.getAnnotateTextRpcTimeoutMultiplier() != null) {
+      annotateTextRetrySettingBuilder.setRpcTimeoutMultiplier(
+          this.clientProperties.getAnnotateTextRpcTimeoutMultiplier());
+    }
+    if (this.clientProperties.getAnnotateTextMaxRpcTimeout() != null) {
+      annotateTextRetrySettingBuilder.setMaxRpcTimeout(
+          this.clientProperties.getAnnotateTextMaxRpcTimeout());
+    }
+    if (this.clientProperties.getAnnotateTextTotalTimeout() != null) {
+      annotateTextRetrySettingBuilder.setTotalTimeout(
+          this.clientProperties.getAnnotateTextTotalTimeout());
+    }
+    clientSettingsBuilder
+        .annotateTextSettings()
+        .setRetrySettings(annotateTextRetrySettingBuilder.build());
     return LanguageServiceClient.create(clientSettingsBuilder.build());
   }
 }

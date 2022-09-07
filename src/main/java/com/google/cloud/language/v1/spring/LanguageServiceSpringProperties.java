@@ -31,45 +31,45 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
   private Integer executorThreadCount;
   private boolean useRest;
   private Duration analyzeSentimentInitialRetryDelay = Duration.ofMillis(100L);
-  private double analyzeSentimentRetryDelayMultiplier = 1.3;
+  private Double analyzeSentimentRetryDelayMultiplier = 1.3;
   private Duration analyzeSentimentMaxRetryDelay = Duration.ofMillis(60000L);
   private Duration analyzeSentimentInitialRpcTimeout = Duration.ofMillis(600000L);
-  private double analyzeSentimentRpcTimeoutMultiplier = 1.0;
+  private Double analyzeSentimentRpcTimeoutMultiplier = 1.0;
   private Duration analyzeSentimentMaxRpcTimeout = Duration.ofMillis(600000L);
   private Duration analyzeSentimentTotalTimeout = Duration.ofMillis(600000L);
   private Duration analyzeEntitiesInitialRetryDelay = Duration.ofMillis(100L);
-  private double analyzeEntitiesRetryDelayMultiplier = 1.3;
+  private Double analyzeEntitiesRetryDelayMultiplier = 1.3;
   private Duration analyzeEntitiesMaxRetryDelay = Duration.ofMillis(60000L);
   private Duration analyzeEntitiesInitialRpcTimeout = Duration.ofMillis(600000L);
-  private double analyzeEntitiesRpcTimeoutMultiplier = 1.0;
+  private Double analyzeEntitiesRpcTimeoutMultiplier = 1.0;
   private Duration analyzeEntitiesMaxRpcTimeout = Duration.ofMillis(600000L);
   private Duration analyzeEntitiesTotalTimeout = Duration.ofMillis(600000L);
   private Duration analyzeEntitySentimentInitialRetryDelay = Duration.ofMillis(100L);
-  private double analyzeEntitySentimentRetryDelayMultiplier = 1.3;
+  private Double analyzeEntitySentimentRetryDelayMultiplier = 1.3;
   private Duration analyzeEntitySentimentMaxRetryDelay = Duration.ofMillis(60000L);
   private Duration analyzeEntitySentimentInitialRpcTimeout = Duration.ofMillis(600000L);
-  private double analyzeEntitySentimentRpcTimeoutMultiplier = 1.0;
+  private Double analyzeEntitySentimentRpcTimeoutMultiplier = 1.0;
   private Duration analyzeEntitySentimentMaxRpcTimeout = Duration.ofMillis(600000L);
   private Duration analyzeEntitySentimentTotalTimeout = Duration.ofMillis(600000L);
   private Duration analyzeSyntaxInitialRetryDelay = Duration.ofMillis(100L);
-  private double analyzeSyntaxRetryDelayMultiplier = 1.3;
+  private Double analyzeSyntaxRetryDelayMultiplier = 1.3;
   private Duration analyzeSyntaxMaxRetryDelay = Duration.ofMillis(60000L);
   private Duration analyzeSyntaxInitialRpcTimeout = Duration.ofMillis(600000L);
-  private double analyzeSyntaxRpcTimeoutMultiplier = 1.0;
+  private Double analyzeSyntaxRpcTimeoutMultiplier = 1.0;
   private Duration analyzeSyntaxMaxRpcTimeout = Duration.ofMillis(600000L);
   private Duration analyzeSyntaxTotalTimeout = Duration.ofMillis(600000L);
   private Duration classifyTextInitialRetryDelay = Duration.ofMillis(100L);
-  private double classifyTextRetryDelayMultiplier = 1.3;
+  private Double classifyTextRetryDelayMultiplier = 1.3;
   private Duration classifyTextMaxRetryDelay = Duration.ofMillis(60000L);
   private Duration classifyTextInitialRpcTimeout = Duration.ofMillis(600000L);
-  private double classifyTextRpcTimeoutMultiplier = 1.0;
+  private Double classifyTextRpcTimeoutMultiplier = 1.0;
   private Duration classifyTextMaxRpcTimeout = Duration.ofMillis(600000L);
   private Duration classifyTextTotalTimeout = Duration.ofMillis(600000L);
   private Duration annotateTextInitialRetryDelay = Duration.ofMillis(100L);
-  private double annotateTextRetryDelayMultiplier = 1.3;
+  private Double annotateTextRetryDelayMultiplier = 1.3;
   private Duration annotateTextMaxRetryDelay = Duration.ofMillis(60000L);
   private Duration annotateTextInitialRpcTimeout = Duration.ofMillis(600000L);
-  private double annotateTextRpcTimeoutMultiplier = 1.0;
+  private Double annotateTextRpcTimeoutMultiplier = 1.0;
   private Duration annotateTextMaxRpcTimeout = Duration.ofMillis(600000L);
   private Duration annotateTextTotalTimeout = Duration.ofMillis(600000L);
 
@@ -106,11 +106,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.analyzeSentimentInitialRetryDelay = analyzeSentimentInitialRetryDelay;
   }
 
-  public double getAnalyzeSentimentRetryDelayMultiplier() {
+  public Double getAnalyzeSentimentRetryDelayMultiplier() {
     return this.analyzeSentimentRetryDelayMultiplier;
   }
 
-  public void setAnalyzeSentimentRetryDelayMultiplier(double analyzeSentimentRetryDelayMultiplier) {
+  public void setAnalyzeSentimentRetryDelayMultiplier(Double analyzeSentimentRetryDelayMultiplier) {
     this.analyzeSentimentRetryDelayMultiplier = analyzeSentimentRetryDelayMultiplier;
   }
 
@@ -130,11 +130,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.analyzeSentimentInitialRpcTimeout = analyzeSentimentInitialRpcTimeout;
   }
 
-  public double getAnalyzeSentimentRpcTimeoutMultiplier() {
+  public Double getAnalyzeSentimentRpcTimeoutMultiplier() {
     return this.analyzeSentimentRpcTimeoutMultiplier;
   }
 
-  public void setAnalyzeSentimentRpcTimeoutMultiplier(double analyzeSentimentRpcTimeoutMultiplier) {
+  public void setAnalyzeSentimentRpcTimeoutMultiplier(Double analyzeSentimentRpcTimeoutMultiplier) {
     this.analyzeSentimentRpcTimeoutMultiplier = analyzeSentimentRpcTimeoutMultiplier;
   }
 
@@ -162,11 +162,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.analyzeEntitiesInitialRetryDelay = analyzeEntitiesInitialRetryDelay;
   }
 
-  public double getAnalyzeEntitiesRetryDelayMultiplier() {
+  public Double getAnalyzeEntitiesRetryDelayMultiplier() {
     return this.analyzeEntitiesRetryDelayMultiplier;
   }
 
-  public void setAnalyzeEntitiesRetryDelayMultiplier(double analyzeEntitiesRetryDelayMultiplier) {
+  public void setAnalyzeEntitiesRetryDelayMultiplier(Double analyzeEntitiesRetryDelayMultiplier) {
     this.analyzeEntitiesRetryDelayMultiplier = analyzeEntitiesRetryDelayMultiplier;
   }
 
@@ -186,11 +186,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.analyzeEntitiesInitialRpcTimeout = analyzeEntitiesInitialRpcTimeout;
   }
 
-  public double getAnalyzeEntitiesRpcTimeoutMultiplier() {
+  public Double getAnalyzeEntitiesRpcTimeoutMultiplier() {
     return this.analyzeEntitiesRpcTimeoutMultiplier;
   }
 
-  public void setAnalyzeEntitiesRpcTimeoutMultiplier(double analyzeEntitiesRpcTimeoutMultiplier) {
+  public void setAnalyzeEntitiesRpcTimeoutMultiplier(Double analyzeEntitiesRpcTimeoutMultiplier) {
     this.analyzeEntitiesRpcTimeoutMultiplier = analyzeEntitiesRpcTimeoutMultiplier;
   }
 
@@ -219,12 +219,12 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.analyzeEntitySentimentInitialRetryDelay = analyzeEntitySentimentInitialRetryDelay;
   }
 
-  public double getAnalyzeEntitySentimentRetryDelayMultiplier() {
+  public Double getAnalyzeEntitySentimentRetryDelayMultiplier() {
     return this.analyzeEntitySentimentRetryDelayMultiplier;
   }
 
   public void setAnalyzeEntitySentimentRetryDelayMultiplier(
-      double analyzeEntitySentimentRetryDelayMultiplier) {
+      Double analyzeEntitySentimentRetryDelayMultiplier) {
     this.analyzeEntitySentimentRetryDelayMultiplier = analyzeEntitySentimentRetryDelayMultiplier;
   }
 
@@ -245,12 +245,12 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.analyzeEntitySentimentInitialRpcTimeout = analyzeEntitySentimentInitialRpcTimeout;
   }
 
-  public double getAnalyzeEntitySentimentRpcTimeoutMultiplier() {
+  public Double getAnalyzeEntitySentimentRpcTimeoutMultiplier() {
     return this.analyzeEntitySentimentRpcTimeoutMultiplier;
   }
 
   public void setAnalyzeEntitySentimentRpcTimeoutMultiplier(
-      double analyzeEntitySentimentRpcTimeoutMultiplier) {
+      Double analyzeEntitySentimentRpcTimeoutMultiplier) {
     this.analyzeEntitySentimentRpcTimeoutMultiplier = analyzeEntitySentimentRpcTimeoutMultiplier;
   }
 
@@ -278,11 +278,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.analyzeSyntaxInitialRetryDelay = analyzeSyntaxInitialRetryDelay;
   }
 
-  public double getAnalyzeSyntaxRetryDelayMultiplier() {
+  public Double getAnalyzeSyntaxRetryDelayMultiplier() {
     return this.analyzeSyntaxRetryDelayMultiplier;
   }
 
-  public void setAnalyzeSyntaxRetryDelayMultiplier(double analyzeSyntaxRetryDelayMultiplier) {
+  public void setAnalyzeSyntaxRetryDelayMultiplier(Double analyzeSyntaxRetryDelayMultiplier) {
     this.analyzeSyntaxRetryDelayMultiplier = analyzeSyntaxRetryDelayMultiplier;
   }
 
@@ -302,11 +302,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.analyzeSyntaxInitialRpcTimeout = analyzeSyntaxInitialRpcTimeout;
   }
 
-  public double getAnalyzeSyntaxRpcTimeoutMultiplier() {
+  public Double getAnalyzeSyntaxRpcTimeoutMultiplier() {
     return this.analyzeSyntaxRpcTimeoutMultiplier;
   }
 
-  public void setAnalyzeSyntaxRpcTimeoutMultiplier(double analyzeSyntaxRpcTimeoutMultiplier) {
+  public void setAnalyzeSyntaxRpcTimeoutMultiplier(Double analyzeSyntaxRpcTimeoutMultiplier) {
     this.analyzeSyntaxRpcTimeoutMultiplier = analyzeSyntaxRpcTimeoutMultiplier;
   }
 
@@ -334,11 +334,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.classifyTextInitialRetryDelay = classifyTextInitialRetryDelay;
   }
 
-  public double getClassifyTextRetryDelayMultiplier() {
+  public Double getClassifyTextRetryDelayMultiplier() {
     return this.classifyTextRetryDelayMultiplier;
   }
 
-  public void setClassifyTextRetryDelayMultiplier(double classifyTextRetryDelayMultiplier) {
+  public void setClassifyTextRetryDelayMultiplier(Double classifyTextRetryDelayMultiplier) {
     this.classifyTextRetryDelayMultiplier = classifyTextRetryDelayMultiplier;
   }
 
@@ -358,11 +358,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.classifyTextInitialRpcTimeout = classifyTextInitialRpcTimeout;
   }
 
-  public double getClassifyTextRpcTimeoutMultiplier() {
+  public Double getClassifyTextRpcTimeoutMultiplier() {
     return this.classifyTextRpcTimeoutMultiplier;
   }
 
-  public void setClassifyTextRpcTimeoutMultiplier(double classifyTextRpcTimeoutMultiplier) {
+  public void setClassifyTextRpcTimeoutMultiplier(Double classifyTextRpcTimeoutMultiplier) {
     this.classifyTextRpcTimeoutMultiplier = classifyTextRpcTimeoutMultiplier;
   }
 
@@ -390,11 +390,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.annotateTextInitialRetryDelay = annotateTextInitialRetryDelay;
   }
 
-  public double getAnnotateTextRetryDelayMultiplier() {
+  public Double getAnnotateTextRetryDelayMultiplier() {
     return this.annotateTextRetryDelayMultiplier;
   }
 
-  public void setAnnotateTextRetryDelayMultiplier(double annotateTextRetryDelayMultiplier) {
+  public void setAnnotateTextRetryDelayMultiplier(Double annotateTextRetryDelayMultiplier) {
     this.annotateTextRetryDelayMultiplier = annotateTextRetryDelayMultiplier;
   }
 
@@ -414,11 +414,11 @@ public class LanguageServiceSpringProperties implements CredentialsSupplier {
     this.annotateTextInitialRpcTimeout = annotateTextInitialRpcTimeout;
   }
 
-  public double getAnnotateTextRpcTimeoutMultiplier() {
+  public Double getAnnotateTextRpcTimeoutMultiplier() {
     return this.annotateTextRpcTimeoutMultiplier;
   }
 
-  public void setAnnotateTextRpcTimeoutMultiplier(double annotateTextRpcTimeoutMultiplier) {
+  public void setAnnotateTextRpcTimeoutMultiplier(Double annotateTextRpcTimeoutMultiplier) {
     this.annotateTextRpcTimeoutMultiplier = annotateTextRpcTimeoutMultiplier;
   }
 
