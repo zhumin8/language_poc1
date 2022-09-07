@@ -136,21 +136,39 @@ public class LanguageAutoConfig {
     // for relevant retry settings, follow logic in:
     // com.google.api.generator.gapic.composer.common.RetrySettingsComposer.createRetrySettingsExprs
     // Defaults already set in LanguageProperties. So just set to property values here.
-    RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings()
+
+    // RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings()
+    //     .getRetrySettings()
+    //     .toBuilder()
+    //     // we either need to make sure client library gets generated together with Spring autoconfig, OR to avoid setting defaults (only set value if user provided).
+    //     .setInitialRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay()) // relay on timing of publishing same v with client lib
+    //     .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
+    //     .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
+    //     .setInitialRpcTimeout(this.clientProperties.getAnnotateTextInitialRpcTimeout())
+    //     .setRpcTimeoutMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
+    //     .setMaxRpcTimeout(this.clientProperties.getAnnotateTextMaxRpcTimeout())
+    //     .setTotalTimeout(this.clientProperties.getAnnotateTextTotalTimeout())
+    //     .build();
+    // clientSettingsBuilder.annotateTextSettings()
+    //     .setRetrySettings(annotateTextSettingsRetrySettings);
+    // // as sample, only set for one method, in real code, should set for all applicable methods.
+
+
+    // safer (in case of version mismatch b/w spring-autoconfig & client lib)
+    // to not set defaults in properties, only modify value if property is set.
+    RetrySettings.Builder annotateTextRetrySettingsBuilder = clientSettingsBuilder.annotateTextSettings()
         .getRetrySettings()
-        .toBuilder()
-        // we either need to make sure client library gets generated together with Spring autoconfig, OR to avoid setting defaults (only set value if user provided).
-        .setInitialRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay()) // relay on timing of publishing same v with client lib
-        .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-        .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
-        .setInitialRpcTimeout(this.clientProperties.getAnnotateTextInitialRpcTimeout())
-        .setRpcTimeoutMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-        .setMaxRpcTimeout(this.clientProperties.getAnnotateTextMaxRpcTimeout())
-        .setTotalTimeout(this.clientProperties.getAnnotateTextTotalTimeout())
-        .build();
+        .toBuilder();
+
+    if (this.clientProperties.getAnnotateTextInitialRetryDelay() != null) {
+      annotateTextRetrySettingsBuilder.setInitialRetryDelay(this.clientProperties.getAnnotateTextInitialRetryDelay());
+    }
+    if (this.clientProperties.getAnnotateTextRetryDelayMultiplier() != null) {
+      annotateTextRetrySettingsBuilder.setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRetryDelayMultiplier());
+    }
+    // ...
     clientSettingsBuilder.annotateTextSettings()
-        .setRetrySettings(annotateTextSettingsRetrySettings);
-    // as sample, only set for one method, in real code, should set for all applicable methods.
+        .setRetrySettings(annotateTextRetrySettingsBuilder.build());
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
   }
