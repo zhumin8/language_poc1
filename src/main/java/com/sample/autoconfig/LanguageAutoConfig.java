@@ -13,12 +13,14 @@ import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 /**
  * Create client with client library default setting, except: - set credentialsProvider, so
@@ -28,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
  * set ExecutorThreadCount when present, sets to client library default if not specified (not tested
  * yet)
  */
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration // Spring Boot 2.7 new annotation,  is meta-annotated with @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(LanguageServiceClient.class) // When lib has multiple services,
 // an antoconfig class per service will be created
 @ConditionalOnProperty(value = "spring.cloud.gcp.language.language-service.enabled", matchIfMissing = true)
@@ -79,7 +81,7 @@ public class LanguageAutoConfig {
   // include service name in the bean name to avoid conflict.
   // example of conflict:
   @Bean
-  @ConditionalOnMissingBean(name = "languageTransportChannelProvider")
+  @ConditionalOnMissingBean(name = "defaultLanguageTransportChannelProvider")
   public TransportChannelProvider defaultLanguageTransportChannelProvider() {
     return LanguageServiceSettings.defaultTransportChannelProvider();
   }
@@ -87,7 +89,7 @@ public class LanguageAutoConfig {
   @Bean
   @ConditionalOnMissingBean
   public LanguageServiceClient languageServiceClient(@Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
-      @Qualifier("languageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
+      @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
