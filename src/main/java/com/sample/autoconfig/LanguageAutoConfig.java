@@ -14,13 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.core.io.Resource;
+import org.springframework.util.StringUtils;
 
 /**
  * Create client with client library default setting, except: - set credentialsProvider, so
@@ -34,11 +34,12 @@ import org.springframework.context.annotation.DependsOn;
 @ConditionalOnClass(LanguageServiceClient.class) // When lib has multiple services,
 // an antoconfig class per service will be created
 @ConditionalOnProperty(value = "spring.cloud.gcp.language.language-service.enabled", matchIfMissing = true)
-@EnableConfigurationProperties(LanguageProperties.class)
+@EnableConfigurationProperties({LanguageProperties.class, SharedProperties.class})
 public class LanguageAutoConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LanguageAutoConfig.class);
   private final LanguageProperties clientProperties;
+  private final SharedProperties sharedProperties;
 
 
   // // retry param map for defaults. Not needed directly. For reference here only.
@@ -64,8 +65,10 @@ public class LanguageAutoConfig {
   // // end of not needed block
 
 
-  public LanguageAutoConfig(LanguageProperties properties) {
+  public LanguageAutoConfig(LanguageProperties properties,
+      SharedProperties sharedProperties) {
     this.clientProperties = properties;
+    this.sharedProperties = sharedProperties;
   }
 
 
@@ -75,7 +78,12 @@ public class LanguageAutoConfig {
   @Bean
   @ConditionalOnMissingBean(name = "languageServiceCredentials") // set name as [serviceName]Credentials
   public CredentialsProvider languageServiceCredentials() throws IOException { // include service name.
-    return new DefaultCredentialsProvider(this.clientProperties);
+    Resource providedLocation = this.clientProperties.getCredentials().getLocation();
+    String encodedKey = this.clientProperties.getCredentials().getEncodedKey();
+    if (providedLocation != null || StringUtils.hasText(encodedKey)) {
+      return new DefaultCredentialsProvider(this.clientProperties);
+    }
+    return new DefaultCredentialsProvider(this.sharedProperties);
   }
 
   // include service name in the bean name to avoid conflict.
