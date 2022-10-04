@@ -78,9 +78,10 @@ public class LanguageAutoConfig {
   @Bean
   @ConditionalOnMissingBean(name = "languageServiceCredentials") // set name as [serviceName]Credentials
   public CredentialsProvider languageServiceCredentials() throws IOException { // include service name.
-    Resource providedLocation = this.clientProperties.getCredentials().getLocation();
-    String encodedKey = this.clientProperties.getCredentials().getEncodedKey();
-    if (providedLocation != null || StringUtils.hasText(encodedKey)) {
+    // Resource providedLocation = this.clientProperties.getCredentials().getLocation();
+    // String encodedKey = this.clientProperties.getCredentials().getEncodedKey();
+    // if (providedLocation != null || StringUtils.hasText(encodedKey)) {
+    if (this.clientProperties.getCredentials().hasKey()) {
       return new DefaultCredentialsProvider(this.clientProperties);
     }
     return new DefaultCredentialsProvider(this.sharedProperties);
