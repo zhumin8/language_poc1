@@ -5,7 +5,7 @@
 
   <groupId>com.sample</groupId>
   <artifactId>cloud-language-starter</artifactId>
-  <packaging>pom</packaging>
+<!--  <packaging>pom</packaging>-->
   <version>0.0.1-SNAPSHOT</version>
   <name>cloud-language-starter</name>
   <description>autoconfig poc project for Spring Boot</description>
