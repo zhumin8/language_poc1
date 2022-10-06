@@ -17,6 +17,7 @@ class LanguageAutoConfigTest {
 
   private static final String SERVICE_CREDENTIAL_LOCATION = "src/test/resources/fake-credential-key.json";
   private static final String SERVICE_CREDENTIAL_CLIENT_ID = "45678";
+  private static final String SERVICE_CREDENTIAL_LOCATION_2 = "src/test/resources/fake-credential-key-2.json";
   private ApplicationContextRunner contextRunner =
       new ApplicationContextRunner()
           .withConfiguration(AutoConfigurations.of(LanguageAutoConfig.class));
@@ -39,11 +40,13 @@ class LanguageAutoConfigTest {
   @Test
   void testShouldTakeCoreCredentials() {
     this.contextRunner
+        .withPropertyValues(
+            "spring.auto.shared.credentials.location=file:" + SERVICE_CREDENTIAL_LOCATION_2)
         .run(ctx -> {
           LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
           Credentials credentials = client.getSettings().getCredentialsProvider().getCredentials();
-          System.out.println(((UserCredentials) credentials).getClientId());
-          assertThat(credentials).isInstanceOf(UserCredentials.class);
+          assertThat(((ServiceAccountCredentials) credentials).getClientId()).isEqualTo(
+              "12345");
         });
   }
 
