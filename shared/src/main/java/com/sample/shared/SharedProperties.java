@@ -1,4 +1,4 @@
-package com.sample.autoconfig;
+package com.sample.shared;
 
 import com.google.cloud.spring.core.Credentials;
 import com.google.cloud.spring.core.CredentialsSupplier;

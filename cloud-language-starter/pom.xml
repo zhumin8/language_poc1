@@ -1,37 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.sample</groupId>
-  <artifactId>cloud-language-p</artifactId>
+  <artifactId>cloud-language-starter</artifactId>
   <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
-  <modules>
-    <module>shared</module>
-    <module>cloud-language-starter</module>
-  </modules>
-  <name>parent</name>
+  <name>cloud-language-starter</name>
   <description>autoconfig poc project for Spring Boot</description>
   <properties>
     <java.version>11</java.version>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
   </properties>
-<!--  <dependencyManagement>-->
-<!--    <dependencies>-->
-<!--      <dependency>-->
-<!--        <groupId>com.google.cloud</groupId>-->
-<!--        <artifactId>libraries-bom</artifactId>-->
-<!--        <version>26.0.0</version>-->
-<!--        <type>pom</type>-->
-<!--        <scope>import</scope>-->
-<!--      </dependency>-->
-<!--    </dependencies>-->
-<!--  </dependencyManagement>-->
+  <!--  <dependencyManagement>-->
+  <!--    <dependencies>-->
+  <!--      <dependency>-->
+  <!--        <groupId>com.google.cloud</groupId>-->
+  <!--        <artifactId>libraries-bom</artifactId>-->
+  <!--        <version>26.0.0</version>-->
+  <!--        <type>pom</type>-->
+  <!--        <scope>import</scope>-->
+  <!--      </dependency>-->
+  <!--    </dependencies>-->
+  <!--  </dependencyManagement>-->
 
-<!--  Depend on the specific client library directly. Avoids dependency on libraries bom-->
+  <!--  Depend on the specific client library directly. Avoids dependency on libraries bom-->
   <dependencies>
+<!--    <dependency>-->
+<!--      <groupId>com.sample</groupId>-->
+<!--      <artifactId>shared</artifactId>-->
+<!--      <version>0.0.1-SNAPSHOT</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <!--   //safe to parse from package name? com.google.cloud.language   -->
@@ -59,7 +60,7 @@
       <version>3.2.1</version>
     </dependency>
 
-<!--    test dependencies-->
+    <!--    test dependencies-->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -77,6 +78,15 @@
       <artifactId>mockito-core</artifactId>
       <version>4.8.0 </version>
       <scope>test</scope>
+    </dependency>
+
+
+
+    <dependency>
+      <groupId>com.sample</groupId>
+      <artifactId>shared</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   <build>

@@ -8,6 +8,7 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
+import com.sample.shared.SharedProperties;
 import java.io.IOException;
 import java.util.Collections;
 import org.slf4j.Logger;
@@ -19,8 +20,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.Resource;
-import org.springframework.util.StringUtils;
 
 /**
  * Create client with client library default setting, except: - set credentialsProvider, so
