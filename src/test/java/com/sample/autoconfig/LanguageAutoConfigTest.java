@@ -29,7 +29,7 @@ class LanguageAutoConfigTest {
 
 
   @Test
-  void testKeyManagementClientCreated() {
+  void testAutoClientCreated() {
     try (ConfigurableApplicationContext c = applicationBuilder.run()) {
       LanguageServiceClient client = c.getBean(LanguageServiceClient.class);
       assertThat(client).isNotNull();
