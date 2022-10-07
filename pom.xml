@@ -10,6 +10,7 @@
   <modules>
     <module>shared</module>
     <module>cloud-language-starter</module>
+    <module>cloud-vision-starter</module>
   </modules>
   <name>parent</name>
   <description>autoconfig poc project for Spring Boot</description>
