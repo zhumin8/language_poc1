@@ -111,7 +111,7 @@ public class LanguageAutoConfig {
             // with default, Map<String, String> headersMap = language.getSettings().getHeaderProvider().getHeaders();
             // is empty map.
             .setHeaderProvider(
-                userAgentHeaderProvider());// custom provider class.
+                this.userAgentHeaderProvider());// custom provider class.
     // .setEndpoint("language.googleapis.com:443")
 
     // this only looks in "spring.cloud.gcp.language.quotaProjectId", if null just leave empty
@@ -182,13 +182,21 @@ public class LanguageAutoConfig {
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
   }
-
+  /**
+   * Returns the "user-agent" header value which should be added to the google-cloud-java REST API
+   * calls. e.g., {@code Spring-autoconfig/1.0.0.RELEASE spring-autogen-language/1.0.0.RELEASE}.
+   *
+   * @return the user agent string.
+   */
   // custom user agent header provider.
   private HeaderProvider userAgentHeaderProvider() {
-    String springLibrary = "spring-cloud-autogen-config-language"; // get service name directly
+    String springLibrary = "spring-cloud-gcp-language";
+    // String springLibrary = "spring-autogen-language"; // get service name directly
     String version = this.getClass().getPackage().getImplementationVersion(); // META-INF/MANIFEST.MF
 
     // see concord tools.yaml google3/cloud/analysis/concord/configs/api/attribution-prod/tools.yaml?rcl=469347651&l=428
-    return () -> Collections.singletonMap("user-agent", "Spring-autoconfig/" + version + " " + springLibrary + "/" + version);
+    return () -> Collections.singletonMap("user-agent", springLibrary + "/" + version);
+
+    // return () -> Collections.singletonMap("user-agent", "Spring/" + version + " " + springLibrary + "/" + version);
   }
 }

@@ -16,13 +16,16 @@
 
 package com.sample.autoconfig;
 
+import com.google.api.core.BetaApi;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.cloud.vision.v1.ImageAnnotatorSettings;
 import java.io.IOException;
+import java.util.Collections;
 import javax.annotation.Generated;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -34,6 +37,7 @@ import org.springframework.context.annotation.Bean;
 
 import com.sample.shared.SharedProperties;
 
+@BetaApi
 @Generated("by gapic-generator-java")
 @AutoConfiguration
 @ConditionalOnClass(value = ImageAnnotatorClient.class)
@@ -74,7 +78,8 @@ public class ImageAnnotatorSpringAutoConfiguration {
     ImageAnnotatorSettings.Builder clientSettingsBuilder =
         ImageAnnotatorSettings.newBuilder()
             .setCredentialsProvider(credentialsProvider)
-            .setTransportChannelProvider(defaultTransportChannelProvider);
+            .setTransportChannelProvider(defaultTransportChannelProvider)
+            .setHeaderProvider(userAgentHeaderProvider());
     if (this.clientProperties.getQuotaProjectId() != null) {
       clientSettingsBuilder.setQuotaProjectId(this.clientProperties.getQuotaProjectId());
     }
@@ -91,5 +96,17 @@ public class ImageAnnotatorSpringAutoConfiguration {
     }
 
     return ImageAnnotatorClient.create(clientSettingsBuilder.build());
+  }
+
+  // custom user agent header provider.
+  private HeaderProvider userAgentHeaderProvider() {
+    String springLibrary = "spring-cloud-gcp-vision";
+    // String springLibrary = "spring-autogen-language"; // get service name directly
+    String version = this.getClass().getPackage().getImplementationVersion(); // META-INF/MANIFEST.MF
+
+    // see concord tools.yaml google3/cloud/analysis/concord/configs/api/attribution-prod/tools.yaml?rcl=469347651&l=428
+    return () -> Collections.singletonMap("user-agent", springLibrary + "/" + version);
+
+    // return () -> Collections.singletonMap("user-agent", "Spring/" + version + " " + springLibrary + "/" + version);
   }
 }
