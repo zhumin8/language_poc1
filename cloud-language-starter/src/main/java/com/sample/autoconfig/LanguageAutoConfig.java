@@ -190,8 +190,8 @@ public class LanguageAutoConfig {
    */
   // custom user agent header provider.
   private HeaderProvider userAgentHeaderProvider() {
-    String springLibrary = "spring-cloud-gcp-language";
-    // String springLibrary = "spring-autogen-language"; // get service name directly
+    // String springLibrary = "spring-cloud-gcp-language";
+    String springLibrary = "spring-autogen-language"; // get service name directly
     String version = this.getClass().getPackage().getImplementationVersion(); // META-INF/MANIFEST.MF
 
     // see concord tools.yaml google3/cloud/analysis/concord/configs/api/attribution-prod/tools.yaml?rcl=469347651&l=428
