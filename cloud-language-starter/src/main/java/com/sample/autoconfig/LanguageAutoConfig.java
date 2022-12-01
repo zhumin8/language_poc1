@@ -95,8 +95,8 @@ public class LanguageAutoConfig {
   }
 
   @Bean
-  @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient(@Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
+  @ConditionalOnMissingBean(name = "languageServiceSettings")
+  public LanguageServiceSettings languageServiceClient(@Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
       @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
 
@@ -179,9 +179,16 @@ public class LanguageAutoConfig {
     // ...
     clientSettingsBuilder.annotateTextSettings()
         .setRetrySettings(annotateTextRetrySettingsBuilder.build());
-
-    return LanguageServiceClient.create(clientSettingsBuilder.build());
+    return clientSettingsBuilder.build();
   }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public LanguageServiceClient languageServiceClient(@Qualifier("languageServiceSettings") LanguageServiceSettings languageServiceSettings)
+      throws IOException {
+    return LanguageServiceClient.create(languageServiceSettings);
+  }
+
   /**
    * Returns the "user-agent" header value which should be added to the google-cloud-java REST API
    * calls. e.g., {@code Spring-autoconfig/1.0.0.RELEASE spring-autogen-language/1.0.0.RELEASE}.
