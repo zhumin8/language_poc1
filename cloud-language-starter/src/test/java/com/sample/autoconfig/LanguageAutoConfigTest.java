@@ -1,18 +1,21 @@
 package com.sample.autoconfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannel;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.auth.oauth2.UserCredentials;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -21,11 +24,18 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.IOException;
 
+@ExtendWith(MockitoExtension.class)
 class LanguageAutoConfigTest {
 
   private static final String SERVICE_CREDENTIAL_LOCATION = "src/test/resources/fake-credential-key.json";
   private static final String SERVICE_CREDENTIAL_CLIENT_ID = "45678";
   private static final String SERVICE_CREDENTIAL_LOCATION_2 = "src/test/resources/fake-credential-key-2.json";
+
+  @Mock private TransportChannel mockTransportChannel;
+  @Mock private ApiCallContext mockApiCallContext;
+  @Mock private TransportChannelProvider mockTransportChannelProvider;
+  @Mock private CredentialsProvider mockCredentialsProvider;
+
   private ApplicationContextRunner contextRunner =
       new ApplicationContextRunner()
           .withConfiguration(AutoConfigurations.of(LanguageAutoConfig.class));
@@ -45,44 +55,51 @@ class LanguageAutoConfigTest {
     }
   }
 
-    @Test
-    void customCredentialsProviderUsedWhenProvided() {
-        CredentialsProvider customCredentialsProvider = mock(CredentialsProvider.class);
-        contextRunner
-                .withBean("languageServiceCredentials", CredentialsProvider.class, () -> customCredentialsProvider)
-                .run(
-                        ctx -> {
-                            LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
-                            assertThat(client.getSettings().getCredentialsProvider()).isSameAs(customCredentialsProvider);
-                        });
-    }
+  @Test
+  void customCredentialsProviderUsedWhenProvided() {
+      contextRunner
+              .withBean("languageServiceCredentials", CredentialsProvider.class, () -> mockCredentialsProvider)
+              .run(
+                      ctx -> {
+                          LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
+                          assertThat(client.getSettings().getCredentialsProvider()).isSameAs(mockCredentialsProvider);
+                      });
+  }
 
-    // TODO: fix
-    @Test
-    void customTransportChannelProviderUsedWhenProvided() throws IOException {
-        TransportChannelProvider customTransportChannelProvider = mock(TransportChannelProvider.class);
-        //        when(customTransportChannelProvider.getTransportName()).thenReturn("grpc");
-        contextRunner
-                .withBean("defaultLanguageTransportChannelProvider", TransportChannelProvider.class, () -> customTransportChannelProvider)
-                .run(
-                        ctx -> {
-                            LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
-                            assertThat(client.getSettings().getTransportChannelProvider()).isSameAs(customTransportChannelProvider);
-                        });
-    }
+  @Test
+  void customTransportChannelProviderUsedWhenProvided() throws IOException {
+      when(mockTransportChannelProvider.getTransportName()).thenReturn("grpc");
+      when(mockTransportChannelProvider.getTransportChannel()).thenReturn(mockTransportChannel);
+      when(mockTransportChannel.getEmptyCallContext()).thenReturn(mockApiCallContext);
+      when(mockApiCallContext.withCredentials(any())).thenReturn(mockApiCallContext);
+      when(mockApiCallContext.withTransportChannel(any())).thenReturn(mockApiCallContext);
 
-    // TODO: fix
-    @Test
-    void customServiceSettingsUsedWhenProvided() {
-        LanguageServiceSettings customLanguageServiceSettings = mock(LanguageServiceSettings.class);
-        contextRunner
-                .withBean("languageServiceSettings", LanguageServiceSettings.class, () -> customLanguageServiceSettings)
-                .run(
-                        ctx -> {
-                            LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
-                            assertThat(client.getSettings()).isSameAs(customLanguageServiceSettings);
-                        });
-    }
+      contextRunner
+              .withBean("defaultLanguageTransportChannelProvider", TransportChannelProvider.class, () -> mockTransportChannelProvider)
+              .run(
+                      ctx -> {
+                          LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
+                          assertThat(client.getSettings().getTransportChannelProvider()).isSameAs(mockTransportChannelProvider);
+                      });
+  }
+
+  @Test
+  void customServiceSettingsUsedWhenProvided() throws IOException {
+      String mockQuotaProjectId = "mockProject";
+      LanguageServiceSettings customLanguageServiceSettings =
+              LanguageServiceSettings.newBuilder()
+                      .setCredentialsProvider(mockCredentialsProvider)
+                      .setQuotaProjectId(mockQuotaProjectId)
+                      .build();
+      contextRunner
+              .withBean("languageServiceSettings", LanguageServiceSettings.class, () -> customLanguageServiceSettings)
+              .run(
+                      ctx -> {
+                          LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
+                          assertThat(client.getSettings().getCredentialsProvider()).isSameAs(mockCredentialsProvider);
+                          assertThat(client.getSettings().getQuotaProjectId()).isSameAs(mockQuotaProjectId);
+                      });
+  }
 
   @Test
   void testShouldTakeCoreCredentials() {
