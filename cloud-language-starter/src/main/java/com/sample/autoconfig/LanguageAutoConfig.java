@@ -95,7 +95,7 @@ public class LanguageAutoConfig {
   }
 
   @Bean
-  @ConditionalOnMissingBean(name = "languageServiceSettings")
+  @ConditionalOnMissingBean
   public LanguageServiceSettings languageServiceSettings(@Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
       @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
