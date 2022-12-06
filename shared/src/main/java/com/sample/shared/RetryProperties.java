@@ -1,5 +1,6 @@
 package com.sample.shared;
 
+import com.google.api.gax.retrying.RetrySettings;
 import org.threeten.bp.Duration;
 
 /** Retry settings. */
@@ -71,6 +72,34 @@ public class RetryProperties {
 
     public void setTotalTimeout(java.time.Duration totalTimeout) {
         this.totalTimeout = Duration.parse(totalTimeout.toString());
+    }
+
+    public RetrySettings buildRetrySettingsFrom(RetrySettings clientRetrySettings){
+        // in case of version mismatch b/w spring-autoconfig & client lib
+        // do not set defaults in properties, only modify value if property is set.
+        RetrySettings.Builder builder = clientRetrySettings.toBuilder();
+        if (initialRetryDelay != null) {
+            builder.setInitialRetryDelay(initialRetryDelay);
+        }
+        if (maxRetryDelay != null) {
+            builder.setMaxRetryDelay(maxRetryDelay);
+        }
+        if (retryDelayMultiplier != null) {
+            builder.setRetryDelayMultiplier(retryDelayMultiplier);
+        }
+        if (initialRpcTimeout != null) {
+            builder.setInitialRpcTimeout(initialRpcTimeout);
+        }
+        if (maxRpcTimeout != null) {
+            builder.setMaxRpcTimeout(maxRpcTimeout);
+        }
+        if (rpcTimeoutMultiplier != null) {
+            builder.setRpcTimeoutMultiplier(rpcTimeoutMultiplier);
+        }
+        if (totalTimeout != null) {
+            builder.setTotalTimeout(totalTimeout);
+        }
+        return builder.build();
     }
 
 }
