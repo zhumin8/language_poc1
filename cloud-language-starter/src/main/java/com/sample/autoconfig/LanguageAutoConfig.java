@@ -8,6 +8,7 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
+import com.sample.shared.RetryProperties;
 import com.sample.shared.SharedProperties;
 import java.io.IOException;
 import java.util.Collections;
@@ -163,22 +164,11 @@ public class LanguageAutoConfig {
     //     .setRetrySettings(annotateTextSettingsRetrySettings);
     // // as sample, only set for one method, in real code, should set for all applicable methods.
 
-
-    // safer (in case of version mismatch b/w spring-autoconfig & client lib)
-    // to not set defaults in properties, only modify value if property is set.
-    RetrySettings.Builder annotateTextRetrySettingsBuilder = clientSettingsBuilder.annotateTextSettings()
-        .getRetrySettings()
-        .toBuilder();
-
-    if (this.clientProperties.getAnnotateTextInitialRetryDelay() != null) {
-      annotateTextRetrySettingsBuilder.setInitialRetryDelay(this.clientProperties.getAnnotateTextInitialRetryDelay());
-    }
-    if (this.clientProperties.getAnnotateTextRetryDelayMultiplier() != null) {
-      annotateTextRetrySettingsBuilder.setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRetryDelayMultiplier());
-    }
-    // ...
-    clientSettingsBuilder.annotateTextSettings()
-        .setRetrySettings(annotateTextRetrySettingsBuilder.build());
+    // For all applicable methods (including two here as PoC):
+    clientSettingsBuilder.annotateTextSettings().setRetrySettings(
+            buildRetrySettings(clientSettingsBuilder.annotateTextSettings().getRetrySettings(), this.clientProperties.getAnnotateTextRetry()));
+    clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(
+            buildRetrySettings(clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings(), this.clientProperties.getAnalyzeSentimentRetry()));
 
     return LanguageServiceClient.create(clientSettingsBuilder.build());
   }
@@ -198,5 +188,33 @@ public class LanguageAutoConfig {
     return () -> Collections.singletonMap("user-agent", springLibrary + "/" + version);
 
     // return () -> Collections.singletonMap("user-agent", "Spring/" + version + " " + springLibrary + "/" + version);
+  }
+
+  private RetrySettings buildRetrySettings(RetrySettings clientRetrySettings, RetryProperties springRetryProperties){
+    // in case of version mismatch b/w spring-autoconfig & client lib
+    // do not set defaults in properties, only modify value if property is set.
+    RetrySettings.Builder builder = clientRetrySettings.toBuilder();
+    if (springRetryProperties.getInitialRetryDelay() != null) {
+      builder.setInitialRetryDelay(springRetryProperties.getInitialRetryDelay());
+    }
+    if (springRetryProperties.getMaxRetryDelay() != null) {
+      builder.setMaxRetryDelay(springRetryProperties.getMaxRetryDelay());
+    }
+    if (springRetryProperties.getRetryDelayMultiplier() != null) {
+      builder.setRetryDelayMultiplier(springRetryProperties.getRetryDelayMultiplier());
+    }
+    if (springRetryProperties.getInitialRpcTimeout() != null) {
+      builder.setInitialRpcTimeout(springRetryProperties.getInitialRpcTimeout());
+    }
+    if (springRetryProperties.getMaxRpcTimeout() != null) {
+      builder.setMaxRpcTimeout(springRetryProperties.getMaxRpcTimeout());
+    }
+    if (springRetryProperties.getRpcTimeoutMultiplier() != null) {
+      builder.setRpcTimeoutMultiplier(springRetryProperties.getRpcTimeoutMultiplier());
+    }
+    if (springRetryProperties.getTotalTimeout() != null) {
+      builder.setTotalTimeout(springRetryProperties.getTotalTimeout());
+    }
+    return builder.build();
   }
 }

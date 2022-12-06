@@ -2,6 +2,7 @@ package com.sample.autoconfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.auth.oauth2.UserCredentials;
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.threeten.bp.Duration;
 
 class LanguageAutoConfigTest {
 
@@ -62,5 +64,26 @@ class LanguageAutoConfigTest {
               SERVICE_CREDENTIAL_CLIENT_ID);
         });
   }
+
+    @Test
+    void testRetrySettingsFromProperties() {
+        this.contextRunner
+                .withPropertyValues(
+                        "spring.cloud.gcp.language.language-service.enabled=true",
+                        "spring.cloud.gcp.language.language-service.annotate-text-retry.retry-delay-multiplier="
+                                + "2",
+                        "spring.cloud.gcp.language.language-service.annotate-text-retry.initial-retry-delay="
+                                + "PT0.5S"
+                )
+                .run(
+                        ctx -> {
+                            LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
+                            RetrySettings retrySettings =
+                                    client.getSettings().annotateTextSettings().getRetrySettings();
+                            assertThat(retrySettings.getRetryDelayMultiplier()).isEqualTo(2);
+                            assertThat(retrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(500));
+                            assertThat(retrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMinutes(1)); // default
+                        });
+    }
 
 }
