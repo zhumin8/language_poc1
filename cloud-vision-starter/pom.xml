@@ -36,8 +36,8 @@
     <!--this dependency only needed for a few util classes. Can be moved to shared location-->
     <dependency>
       <groupId>com.google.cloud</groupId>
-      <artifactId>spring-cloud-gcp-core</artifactId>
-      <version>3.2.1</version>
+      <artifactId>spring-cloud-gcp-autoconfigure</artifactId>
+      <version>3.4.0</version>
     </dependency>
 
     <!--    test dependencies-->
@@ -59,37 +59,6 @@
       <version>4.8.0 </version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.sample</groupId>
-      <artifactId>shared</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
   </dependencies>
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.2.2</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>
