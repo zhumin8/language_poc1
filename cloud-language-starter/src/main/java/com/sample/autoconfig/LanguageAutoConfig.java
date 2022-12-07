@@ -69,13 +69,8 @@ public class LanguageAutoConfig {
             // default transport channel provider, allow user to override bean for example to configure a proxy
             // https://github.com/googleapis/google-cloud-java#configuring-a-proxy
             .setTransportChannelProvider(defaultTransportChannelProvider)
-            // with this header provider:
-            // user-agent: Spring-autoconfig//3.2.1 spring-cloud-autogen-config-[packagename]/3.2.1;
-            // with default, Map<String, String> headersMap = language.getSettings().getHeaderProvider().getHeaders();
-            // is empty map.
             .setHeaderProvider(
                 this.userAgentHeaderProvider());// custom provider class.
-    // .setEndpoint("language.googleapis.com:443")
 
     // this only looks in "spring.cloud.gcp.language.quotaProjectId", if null just leave empty
     // client lib will look for ADC projectId. "spring.cloud.gcp.project-id" is not used.
@@ -96,7 +91,6 @@ public class LanguageAutoConfig {
     }
 
     // To use REST (HTTP1.1/JSON) transport (instead of gRPC) for sending and receiving requests over
-    // can set a property to enable this if specified, but seems too niche usecase?
     if (clientProperties.isUseRest()) {
       clientSettingsBuilder.setTransportChannelProvider(
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
@@ -109,23 +103,6 @@ public class LanguageAutoConfig {
     // for relevant retry settings, follow logic in:
     // com.google.api.generator.gapic.composer.common.RetrySettingsComposer.createRetrySettingsExprs
     // Defaults already set in LanguageProperties. So just set to property values here.
-
-    // RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings()
-    //     .getRetrySettings()
-    //     .toBuilder()
-    //     // we either need to make sure client library gets generated together with Spring autoconfig, OR to avoid setting defaults (only set value if user provided).
-    //     .setInitialRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay()) // relay on timing of publishing same v with client lib
-    //     .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-    //     .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
-    //     .setInitialRpcTimeout(this.clientProperties.getAnnotateTextInitialRpcTimeout())
-    //     .setRpcTimeoutMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-    //     .setMaxRpcTimeout(this.clientProperties.getAnnotateTextMaxRpcTimeout())
-    //     .setTotalTimeout(this.clientProperties.getAnnotateTextTotalTimeout())
-    //     .build();
-    // clientSettingsBuilder.annotateTextSettings()
-    //     .setRetrySettings(annotateTextSettingsRetrySettings);
-    // // as sample, only set for one method, in real code, should set for all applicable methods.
-
 
     // safer (in case of version mismatch b/w spring-autoconfig & client lib)
     // to not set defaults in properties, only modify value if property is set.
