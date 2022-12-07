@@ -35,7 +35,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
-import com.sample.shared.SharedProperties;
 
 @BetaApi
 @Generated("by gapic-generator-java")
@@ -43,24 +42,19 @@ import com.sample.shared.SharedProperties;
 @ConditionalOnClass(value = ImageAnnotatorClient.class)
 @ConditionalOnProperty(
     value = "spring.cloud.gcp.autoconfig.vision.image-annotator.enabled", matchIfMissing = false)
-@EnableConfigurationProperties({ImageAnnotatorSpringProperties.class, SharedProperties.class})
+@EnableConfigurationProperties({ImageAnnotatorSpringProperties.class})
 public class ImageAnnotatorSpringAutoConfiguration {
   private final ImageAnnotatorSpringProperties clientProperties;
-  private final SharedProperties sharedProperties;
+  private final CredentialsProvider credentialsProvider;
 
   protected ImageAnnotatorSpringAutoConfiguration(ImageAnnotatorSpringProperties clientProperties,
-      SharedProperties sharedProperties) {
+      CredentialsProvider credentialsProvider) throws IOException {
     this.clientProperties = clientProperties;
-    this.sharedProperties = sharedProperties;
-  }
-
-  @Bean
-  @ConditionalOnMissingBean
-  public CredentialsProvider imageAnnotatorCredentials() throws IOException {
     if (this.clientProperties.getCredentials().hasKey()) {
-      return new DefaultCredentialsProvider(this.clientProperties);
+      this.credentialsProvider = new DefaultCredentialsProvider(this.clientProperties);
+    } else {
+      this.credentialsProvider = credentialsProvider;
     }
-    return new DefaultCredentialsProvider(this.sharedProperties);
   }
 
   @Bean
@@ -72,12 +66,11 @@ public class ImageAnnotatorSpringAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean
   public ImageAnnotatorClient imageAnnotatorClient(
-      @Qualifier("imageAnnotatorCredentials") CredentialsProvider credentialsProvider,
       @Qualifier("defaultImageAnnotatorTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
     ImageAnnotatorSettings.Builder clientSettingsBuilder =
         ImageAnnotatorSettings.newBuilder()
-            .setCredentialsProvider(credentialsProvider)
+            .setCredentialsProvider(this.credentialsProvider)
             .setTransportChannelProvider(defaultTransportChannelProvider)
             .setHeaderProvider(userAgentHeaderProvider());
     if (this.clientProperties.getQuotaProjectId() != null) {

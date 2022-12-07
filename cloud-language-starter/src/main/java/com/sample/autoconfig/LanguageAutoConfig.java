@@ -8,7 +8,6 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
-import com.sample.shared.SharedProperties;
 import java.io.IOException;
 import java.util.Collections;
 import org.slf4j.Logger;
@@ -33,57 +32,21 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnClass(LanguageServiceClient.class) // When lib has multiple services,
 // an antoconfig class per service will be created
 @ConditionalOnProperty(value = "spring.cloud.gcp.language.language-service.enabled", matchIfMissing = true)
-@EnableConfigurationProperties({LanguageProperties.class, SharedProperties.class})
+@EnableConfigurationProperties({LanguageProperties.class})
 public class LanguageAutoConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LanguageAutoConfig.class);
   private final LanguageProperties clientProperties;
-  private final SharedProperties sharedProperties;
-
-
-  // // retry param map for defaults. Not needed directly. For reference here only.
-  // // clear out after settings done.
-  // private static final ImmutableMap<String, RetrySettings> RETRY_PARAM_DEFINITIONS;
-  //
-  // static {
-  //   ImmutableMap.Builder<String, RetrySettings> definitions = ImmutableMap.builder();
-  //   RetrySettings settings = null;
-  //   settings =
-  //       RetrySettings.newBuilder()
-  //           .setInitialRetryDelay(Duration.ofMillis(100L))
-  //           .setRetryDelayMultiplier(1.3)
-  //           .setMaxRetryDelay(Duration.ofMillis(60000L))
-  //           .setInitialRpcTimeout(Duration.ofMillis(600000L))
-  //           .setRpcTimeoutMultiplier(1.0)
-  //           .setMaxRpcTimeout(Duration.ofMillis(600000L))
-  //           .setTotalTimeout(Duration.ofMillis(600000L))
-  //           .build();
-  //   definitions.put("retry_policy_0_params", settings);
-  //   RETRY_PARAM_DEFINITIONS = definitions.build();
-  // }
-  // // end of not needed block
-
+  private final CredentialsProvider credentialsProvider;
 
   public LanguageAutoConfig(LanguageProperties properties,
-      SharedProperties sharedProperties) {
+      CredentialsProvider credentialsProvider) throws IOException {
     this.clientProperties = properties;
-    this.sharedProperties = sharedProperties;
-  }
-
-
-  // benefit of configuring as a separate bean: could be easier to override if needed
-  // need identifier of service in the name as there can be different credentials per client library
-  // Can it be different per service then??
-  @Bean
-  @ConditionalOnMissingBean(name = "languageServiceCredentials") // set name as [serviceName]Credentials
-  public CredentialsProvider languageServiceCredentials() throws IOException { // include service name.
-    // Resource providedLocation = this.clientProperties.getCredentials().getLocation();
-    // String encodedKey = this.clientProperties.getCredentials().getEncodedKey();
-    // if (providedLocation != null || StringUtils.hasText(encodedKey)) {
     if (this.clientProperties.getCredentials().hasKey()) {
-      return new DefaultCredentialsProvider(this.clientProperties);
+      this.credentialsProvider = new DefaultCredentialsProvider(this.clientProperties);
+    } else {
+      this.credentialsProvider = credentialsProvider;
     }
-    return new DefaultCredentialsProvider(this.sharedProperties);
   }
 
   // include service name in the bean name to avoid conflict.
@@ -95,14 +58,14 @@ public class LanguageAutoConfig {
   }
 
   @Bean
-  @ConditionalOnMissingBean(name = "languageServiceSettings")
-  public LanguageServiceSettings languageServiceClient(@Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
+  @ConditionalOnMissingBean
+  public LanguageServiceSettings languageServiceSettings(
       @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
         LanguageServiceSettings.newBuilder()
-            .setCredentialsProvider(credentialsProvider)
+            .setCredentialsProvider(this.credentialsProvider)
             // default transport channel provider, allow user to override bean for example to configure a proxy
             // https://github.com/googleapis/google-cloud-java#configuring-a-proxy
             .setTransportChannelProvider(defaultTransportChannelProvider)
@@ -184,7 +147,7 @@ public class LanguageAutoConfig {
 
   @Bean
   @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient(@Qualifier("languageServiceSettings") LanguageServiceSettings languageServiceSettings)
+  public LanguageServiceClient languageServiceClient(LanguageServiceSettings languageServiceSettings)
       throws IOException {
     return LanguageServiceClient.create(languageServiceSettings);
   }

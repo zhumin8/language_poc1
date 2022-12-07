@@ -33,10 +33,9 @@
     <!--this dependency only needed for a few util classes. Can be moved to shared location-->
     <dependency>
       <groupId>com.google.cloud</groupId>
-      <artifactId>spring-cloud-gcp-core</artifactId>
-      <version>3.2.1</version>
+      <artifactId>spring-cloud-gcp-autoconfigure</artifactId>
+      <version>3.4.0</version>
     </dependency>
-
     <!--    test dependencies-->
     <dependency>
       <groupId>org.springframework.boot</groupId>
