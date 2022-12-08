@@ -94,10 +94,28 @@ public class LanguageAutoConfig {
     return LanguageServiceSettings.defaultTransportChannelProvider();
   }
 
+  // For each method, create default bean with name <method>RetrySettings
+  // PoC here with two example beans:
+  @Bean
+  @ConditionalOnMissingBean(name = "annotateTextRetrySettings")
+  public RetrySettings annotateTextRetrySettings() {
+    return LanguageServiceSettings.newBuilder().annotateTextSettings().retrySettings().build();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(name = "analyzeSentimentRetrySettings")
+  public RetrySettings analyzeSentimentRetrySettings() {
+    return LanguageServiceSettings.newBuilder().analyzeSentimentSettings().retrySettings().build();
+  }
+
   @Bean
   @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient(@Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
-      @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
+  public LanguageServiceSettings languageServiceSettings(
+          @Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
+          @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider,
+          @Qualifier("annotateTextRetrySettings") RetrySettings annotateTextRetrySettings,
+          @Qualifier("analyzeSentimentRetrySettings") RetrySettings analyzeSentimentRetrySettings
+          )
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
@@ -163,25 +181,19 @@ public class LanguageAutoConfig {
     //     .setRetrySettings(annotateTextSettingsRetrySettings);
     // // as sample, only set for one method, in real code, should set for all applicable methods.
 
+    clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
+    clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(analyzeSentimentRetrySettings);
 
-    // safer (in case of version mismatch b/w spring-autoconfig & client lib)
-    // to not set defaults in properties, only modify value if property is set.
-    RetrySettings.Builder annotateTextRetrySettingsBuilder = clientSettingsBuilder.annotateTextSettings()
-        .getRetrySettings()
-        .toBuilder();
-
-    if (this.clientProperties.getAnnotateTextInitialRetryDelay() != null) {
-      annotateTextRetrySettingsBuilder.setInitialRetryDelay(this.clientProperties.getAnnotateTextInitialRetryDelay());
-    }
-    if (this.clientProperties.getAnnotateTextRetryDelayMultiplier() != null) {
-      annotateTextRetrySettingsBuilder.setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRetryDelayMultiplier());
-    }
-    // ...
-    clientSettingsBuilder.annotateTextSettings()
-        .setRetrySettings(annotateTextRetrySettingsBuilder.build());
-
-    return LanguageServiceClient.create(clientSettingsBuilder.build());
+    return clientSettingsBuilder.build();
   }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public LanguageServiceClient languageServiceClient(LanguageServiceSettings languageServiceSettings)
+          throws IOException {
+    return LanguageServiceClient.create(languageServiceSettings);
+  }
+
   /**
    * Returns the "user-agent" header value which should be added to the google-cloud-java REST API
    * calls. e.g., {@code Spring-autoconfig/1.0.0.RELEASE spring-autogen-language/1.0.0.RELEASE}.
