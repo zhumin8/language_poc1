@@ -2,11 +2,13 @@ package com.sample.autoconfig; // generated as client-lib-package-name.spring
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.LanguageServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
+import com.sample.shared.Retry;
 import com.sample.shared.SharedProperties;
 import java.io.IOException;
 import java.util.Collections;
@@ -39,36 +41,11 @@ public class LanguageAutoConfig {
   private final LanguageProperties clientProperties;
   private final SharedProperties sharedProperties;
 
-
-  // // retry param map for defaults. Not needed directly. For reference here only.
-  // // clear out after settings done.
-  // private static final ImmutableMap<String, RetrySettings> RETRY_PARAM_DEFINITIONS;
-  //
-  // static {
-  //   ImmutableMap.Builder<String, RetrySettings> definitions = ImmutableMap.builder();
-  //   RetrySettings settings = null;
-  //   settings =
-  //       RetrySettings.newBuilder()
-  //           .setInitialRetryDelay(Duration.ofMillis(100L))
-  //           .setRetryDelayMultiplier(1.3)
-  //           .setMaxRetryDelay(Duration.ofMillis(60000L))
-  //           .setInitialRpcTimeout(Duration.ofMillis(600000L))
-  //           .setRpcTimeoutMultiplier(1.0)
-  //           .setMaxRpcTimeout(Duration.ofMillis(600000L))
-  //           .setTotalTimeout(Duration.ofMillis(600000L))
-  //           .build();
-  //   definitions.put("retry_policy_0_params", settings);
-  //   RETRY_PARAM_DEFINITIONS = definitions.build();
-  // }
-  // // end of not needed block
-
-
   public LanguageAutoConfig(LanguageProperties properties,
       SharedProperties sharedProperties) {
     this.clientProperties = properties;
     this.sharedProperties = sharedProperties;
   }
-
 
   // benefit of configuring as a separate bean: could be easier to override if needed
   // need identifier of service in the name as there can be different credentials per client library
@@ -93,10 +70,19 @@ public class LanguageAutoConfig {
     return LanguageServiceSettings.defaultTransportChannelProvider();
   }
 
+  // bean for overriding retry settings on service-level
+  @Bean
+  @ConditionalOnMissingBean(name = "languageRetrySettings")
+  public Retry languageRetrySettings() {
+    return clientProperties.getRetry();
+  }
+
   @Bean
   @ConditionalOnMissingBean
-  public LanguageServiceClient languageServiceClient(@Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
-      @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
+  public LanguageServiceSettings languageServiceSettings(
+          @Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
+          @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider,
+          @Qualifier("languageRetrySettings") Retry languageRetrySettings)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
@@ -162,16 +148,26 @@ public class LanguageAutoConfig {
     //     .setRetrySettings(annotateTextSettingsRetrySettings);
     // // as sample, only set for one method, in real code, should set for all applicable methods.
 
+    // TODO: maybe condition this for only if retry settings bean is not default?
     // For all applicable methods (including two here as PoC):
-    clientSettingsBuilder.annotateTextSettings().setRetrySettings(
-            this.clientProperties.getAnnotateTextRetry()
-                    .buildRetrySettingsFrom(clientSettingsBuilder.annotateTextSettings().getRetrySettings()));
-    clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(
-            this.clientProperties.getAnalyzeSentimentRetry()
-                    .buildRetrySettingsFrom(clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings()));
+    RetrySettings annotateTextRetrySettings = languageRetrySettings
+            .buildRetrySettingsFrom(clientSettingsBuilder.annotateTextSettings().getRetrySettings());
+    clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
 
-    return LanguageServiceClient.create(clientSettingsBuilder.build());
+    RetrySettings analyzeSentimentRetrySettings = languageRetrySettings
+            .buildRetrySettingsFrom(clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings());
+    clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(analyzeSentimentRetrySettings);
+
+    return clientSettingsBuilder.build();
   }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public LanguageServiceClient languageServiceClient(LanguageServiceSettings languageServiceSettings)
+          throws IOException {
+    return LanguageServiceClient.create(languageServiceSettings);
+  }
+
   /**
    * Returns the "user-agent" header value which should be added to the google-cloud-java REST API
    * calls. e.g., {@code Spring-autoconfig/1.0.0.RELEASE spring-autogen-language/1.0.0.RELEASE}.
