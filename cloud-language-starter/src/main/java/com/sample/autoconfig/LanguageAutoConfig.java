@@ -124,30 +124,6 @@ public class LanguageAutoConfig {
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
 
-    // Retry Settings: set for each method.
-    // Useful settings for users. should expose settings for each method.
-    // If property not set, set to default -- need to access from gapic-context for each method.
-
-    // for relevant retry settings, follow logic in:
-    // com.google.api.generator.gapic.composer.common.RetrySettingsComposer.createRetrySettingsExprs
-    // Defaults already set in LanguageProperties. So just set to property values here.
-
-    // RetrySettings annotateTextSettingsRetrySettings = clientSettingsBuilder.annotateTextSettings()
-    //     .getRetrySettings()
-    //     .toBuilder()
-    //     // we either need to make sure client library gets generated together with Spring autoconfig, OR to avoid setting defaults (only set value if user provided).
-    //     .setInitialRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay()) // relay on timing of publishing same v with client lib
-    //     .setRetryDelayMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-    //     .setMaxRetryDelay(this.clientProperties.getAnnotateTextMaxRetryDelay())
-    //     .setInitialRpcTimeout(this.clientProperties.getAnnotateTextInitialRpcTimeout())
-    //     .setRpcTimeoutMultiplier(this.clientProperties.getAnnotateTextRpcTimeoutMultiplier())
-    //     .setMaxRpcTimeout(this.clientProperties.getAnnotateTextMaxRpcTimeout())
-    //     .setTotalTimeout(this.clientProperties.getAnnotateTextTotalTimeout())
-    //     .build();
-    // clientSettingsBuilder.annotateTextSettings()
-    //     .setRetrySettings(annotateTextSettingsRetrySettings);
-    // // as sample, only set for one method, in real code, should set for all applicable methods.
-
     if (languageServiceRetry != null) {
       // Retry settings overrides configured through either properties or bean:
       // update method-level default retry settings with service-level overrides
