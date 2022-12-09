@@ -1,6 +1,7 @@
 package com.sample.autoconfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -12,6 +13,7 @@ import com.google.auth.oauth2.UserCredentials;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.sample.shared.Retry;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -118,6 +120,20 @@ class LanguageAutoConfigTest {
                             LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
                             assertThat(client.getSettings().annotateTextSettings().getRetrySettings().getInitialRetryDelay()).isEqualTo(Duration.ofMillis(100L));
                             // if bean only overrides certain retry settings, then the others still take on client library defaults
+                            assertThat(client.getSettings().annotateTextSettings().getRetrySettings().getRetryDelayMultiplier()).isEqualTo(1.3);
+                        });
+    }
+
+    @Test
+    void testRetrySettingsDefault() {
+        contextRunner
+                .withPropertyValues(
+                        "spring.cloud.gcp.language.language-service.enabled=true"
+                )
+                .run(
+                        ctx -> {
+                            LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
+                            assertThatThrownBy(() -> ctx.getBean(Retry.class)).isInstanceOf(NoSuchBeanDefinitionException.class);
                             assertThat(client.getSettings().annotateTextSettings().getRetrySettings().getRetryDelayMultiplier()).isEqualTo(1.3);
                         });
     }

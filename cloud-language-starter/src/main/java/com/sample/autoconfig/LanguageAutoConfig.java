@@ -72,9 +72,9 @@ public class LanguageAutoConfig {
 
   // bean for overriding retry settings on service-level
   @Bean
-  @ConditionalOnMissingBean(name = "languageRetrySettings")
-  public Retry languageRetrySettings() {
-    return clientProperties.getRetry();
+  @ConditionalOnMissingBean(name = "languageRetry")
+  public Retry languageServiceRetry() {
+    return this.clientProperties.getRetry();
   }
 
   @Bean
@@ -82,7 +82,7 @@ public class LanguageAutoConfig {
   public LanguageServiceSettings languageServiceSettings(
           @Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
           @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider,
-          @Qualifier("languageRetrySettings") Retry languageRetrySettings)
+          @Qualifier("languageServiceRetry") Retry languageServiceRetry)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
@@ -148,15 +148,20 @@ public class LanguageAutoConfig {
     //     .setRetrySettings(annotateTextSettingsRetrySettings);
     // // as sample, only set for one method, in real code, should set for all applicable methods.
 
-    // TODO: maybe condition this for only if retry settings bean is not default?
-    // For all applicable methods (including two here as PoC):
-    RetrySettings annotateTextRetrySettings = languageRetrySettings
-            .buildRetrySettingsFrom(clientSettingsBuilder.annotateTextSettings().getRetrySettings());
-    clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
+    if (languageServiceRetry != null) {
+      // Retry settings overrides configured through either properties or bean:
+      // update method-level default retry settings with service-level overrides
+      // TODO: Repeat for all applicable methods (including two here as PoC)
 
-    RetrySettings analyzeSentimentRetrySettings = languageRetrySettings
-            .buildRetrySettingsFrom(clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings());
-    clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(analyzeSentimentRetrySettings);
+      RetrySettings annotateTextRetrySettings = languageServiceRetry
+              .buildRetrySettingsFrom(clientSettingsBuilder.annotateTextSettings().getRetrySettings());
+      clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
+
+      RetrySettings analyzeSentimentRetrySettings = languageServiceRetry
+              .buildRetrySettingsFrom(clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings());
+      clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(analyzeSentimentRetrySettings);
+
+    }
 
     return clientSettingsBuilder.build();
   }

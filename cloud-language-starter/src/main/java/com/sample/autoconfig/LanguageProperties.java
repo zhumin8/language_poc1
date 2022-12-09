@@ -25,8 +25,8 @@ public class LanguageProperties implements CredentialsSupplier {
   private boolean useRest = false;
 
   // retry settings: properties as nested class
-  // in properties file: <prefix>.languageService.retry.initial-retry-delay=PT0.5S
-  private Retry retry = new Retry();
+  // in properties file: <prefix>.language-service.retry.initial-retry-delay=PT0.5S
+  private Retry retry;
 
   @Override
   public Credentials getCredentials() {
