@@ -72,7 +72,7 @@ public class LanguageAutoConfig {
 
   // bean for overriding retry settings on service-level
   @Bean
-  @ConditionalOnMissingBean(name = "languageRetry")
+  @ConditionalOnMissingBean(name = "languageServiceRetry")
   public Retry languageServiceRetry() {
     return this.clientProperties.getRetry();
   }
@@ -124,10 +124,10 @@ public class LanguageAutoConfig {
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
 
+    // Retry settings overrides configured through either properties or bean:
+    // update method-level default retry settings with service-level overrides
     if (languageServiceRetry != null) {
-      // Retry settings overrides configured through either properties or bean:
-      // update method-level default retry settings with service-level overrides
-      // TODO: Repeat for all applicable methods (including two here as PoC)
+      // languageServiceRetry will be NullBean (.equals(null)) if not otherwise configured
 
       RetrySettings annotateTextRetrySettings = languageServiceRetry
               .buildRetrySettingsFrom(clientSettingsBuilder.annotateTextSettings().getRetrySettings());
@@ -137,6 +137,7 @@ public class LanguageAutoConfig {
               .buildRetrySettingsFrom(clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings());
       clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(analyzeSentimentRetrySettings);
 
+      // TODO: Repeat for all applicable methods (including two here as PoC)
     }
 
     return clientSettingsBuilder.build();
