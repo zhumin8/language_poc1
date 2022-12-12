@@ -114,42 +114,4 @@ public class Retry {
     public void setMaxRpcTimeout(java.time.Duration maxRpcTimeout) {
         this.maxRpcTimeout = Duration.parse(maxRpcTimeout.toString());
     }
-
-    /**
-     * Helper to modify clientRetrySettings with override values, only for properties that are set
-     * Ensures that defaults are not configured through properties
-     * @param clientRetrySettings
-     * @return the updated RetrySettings
-     */
-    public RetrySettings buildRetrySettingsFrom(RetrySettings clientRetrySettings){
-        // do not set defaults through properties
-        // this method modifies clientRetrySettings with override values only for properties that are set
-        RetrySettings.Builder builder = clientRetrySettings.toBuilder();
-        if (totalTimeout != null) {
-            builder.setTotalTimeout(totalTimeout);
-        }
-        if (initialRetryDelay != null) {
-            builder.setInitialRetryDelay(initialRetryDelay);
-        }
-        if (retryDelayMultiplier != null) {
-            builder.setRetryDelayMultiplier(retryDelayMultiplier);
-        }
-        if (maxRetryDelay != null) {
-            builder.setMaxRetryDelay(maxRetryDelay);
-        }
-        if (maxAttempts != null) {
-            builder.setMaxAttempts(maxAttempts);
-        }
-        if (initialRpcTimeout != null) {
-            builder.setInitialRpcTimeout(initialRpcTimeout);
-        }
-        if (rpcTimeoutMultiplier != null) {
-            builder.setRpcTimeoutMultiplier(rpcTimeoutMultiplier);
-        }
-        if (maxRpcTimeout != null) {
-            builder.setMaxRpcTimeout(maxRpcTimeout);
-        }
-
-        return builder.build();
-    }
 }

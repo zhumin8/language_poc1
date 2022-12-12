@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.threeten.bp.Duration;
 
 /**
  * Create client with client library default setting, except: - set credentialsProvider, so
@@ -72,9 +73,18 @@ public class LanguageAutoConfig {
 
   // bean for overriding retry settings on service-level
   @Bean
-  @ConditionalOnMissingBean(name = "languageServiceRetry")
-  public Retry languageServiceRetry() {
-    return this.clientProperties.getRetry();
+  @ConditionalOnMissingBean(name = "languageServiceRetrySettings")
+  public RetrySettings languageServiceRetrySettings() {
+    RetrySettings.Builder serviceRetrySettings = RetrySettings.newBuilder();
+    // set service defaults with values from service config (refer to gapic generator code for this)
+    serviceRetrySettings.setTotalTimeout(Duration.ofMillis(600000L));
+    serviceRetrySettings.setInitialRetryDelay(Duration.ofMillis(100L));
+    serviceRetrySettings.setRetryDelayMultiplier(1.3);
+    serviceRetrySettings.setMaxRetryDelay(Duration.ofMillis(60000L));
+    serviceRetrySettings.setMaxAttempts(0);
+    // TODO: fill default values for all settings
+
+    return updateRetrySettings(serviceRetrySettings.build(), this.clientProperties.getServiceRetrySettings());
   }
 
   @Bean
@@ -82,7 +92,7 @@ public class LanguageAutoConfig {
   public LanguageServiceSettings languageServiceSettings(
           @Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
           @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider,
-          @Qualifier("languageServiceRetry") Retry languageServiceRetry)
+          @Qualifier("languageServiceRetrySettings") RetrySettings languageServiceRetrySettings)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
@@ -126,19 +136,9 @@ public class LanguageAutoConfig {
 
     // Retry settings overrides configured through either properties or bean:
     // update method-level default retry settings with service-level overrides
-    if (languageServiceRetry != null) {
-      // languageServiceRetry will be NullBean (.equals(null)) if not otherwise configured
-
-      RetrySettings annotateTextRetrySettings = languageServiceRetry
-              .buildRetrySettingsFrom(clientSettingsBuilder.annotateTextSettings().getRetrySettings());
-      clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
-
-      RetrySettings analyzeSentimentRetrySettings = languageServiceRetry
-              .buildRetrySettingsFrom(clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings());
-      clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(analyzeSentimentRetrySettings);
-
+      clientSettingsBuilder.annotateTextSettings().setRetrySettings(languageServiceRetrySettings);
+      clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(languageServiceRetrySettings);
       // TODO: Repeat for all applicable methods (including two here as PoC)
-    }
 
     return clientSettingsBuilder.build();
   }
@@ -166,5 +166,35 @@ public class LanguageAutoConfig {
     return () -> Collections.singletonMap("user-agent", springLibrary + "/" + version);
 
     // return () -> Collections.singletonMap("user-agent", "Spring/" + version + " " + springLibrary + "/" + version);
+  }
+
+  // TODO: alternatively, this can live in an util class in spring-cloud-gcp-core
+  private RetrySettings updateRetrySettings(RetrySettings defaultRetrySettings, Retry newRetrySettings) {
+    RetrySettings.Builder builder = defaultRetrySettings.toBuilder();
+    if (newRetrySettings.getTotalTimeout() != null) {
+      builder.setTotalTimeout(newRetrySettings.getTotalTimeout());
+    }
+    if (newRetrySettings.getInitialRetryDelay() != null) {
+      builder.setInitialRetryDelay(newRetrySettings.getInitialRetryDelay());
+    }
+    if (newRetrySettings.getRetryDelayMultiplier() != null) {
+      builder.setRetryDelayMultiplier(newRetrySettings.getRetryDelayMultiplier());
+    }
+    if (newRetrySettings.getMaxRetryDelay() != null) {
+      builder.setMaxRetryDelay(newRetrySettings.getMaxRetryDelay());
+    }
+    if (newRetrySettings.getMaxAttempts() != null) {
+      builder.setMaxAttempts(newRetrySettings.getMaxAttempts());
+    }
+    if (newRetrySettings.getInitialRpcTimeout() != null) {
+      builder.setInitialRpcTimeout(newRetrySettings.getInitialRpcTimeout());
+    }
+    if (newRetrySettings.getRpcTimeoutMultiplier() != null) {
+      builder.setRpcTimeoutMultiplier(newRetrySettings.getRpcTimeoutMultiplier());
+    }
+    if (newRetrySettings.getMaxRpcTimeout() != null) {
+      builder.setMaxRpcTimeout(newRetrySettings.getMaxRpcTimeout());
+    }
+    return builder.build();
   }
 }

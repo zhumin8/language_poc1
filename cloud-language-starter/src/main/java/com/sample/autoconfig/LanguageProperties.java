@@ -1,12 +1,10 @@
 package com.sample.autoconfig;
 
-import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.spring.core.Credentials;
 import com.google.cloud.spring.core.CredentialsSupplier;
 import com.sample.shared.Retry;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.threeten.bp.Duration;
 
 @ConfigurationProperties("spring.cloud.gcp.language.language-service")
 // branding considerations: google.cloud.spring.autoconfig.language-service
@@ -25,8 +23,8 @@ public class LanguageProperties implements CredentialsSupplier {
   private boolean useRest = false;
 
   // Configurable properties for overriding RetrySettings
-  // E.g. [prefix].language-service.retry.initial-retry-delay=PT0.5S
-  private Retry retry;
+  // E.g. [prefix].language-service.service-retry-settings.initial-retry-delay=PT0.5S
+  private Retry serviceRetrySettings = new Retry();
 
   @Override
   public Credentials getCredentials() {
@@ -53,11 +51,11 @@ public class LanguageProperties implements CredentialsSupplier {
     return useRest;
   }
 
-  public Retry getRetry() {
-    return retry;
+  public Retry getServiceRetrySettings() {
+    return serviceRetrySettings;
   }
 
-  public void setRetry(Retry retry) {
-    this.retry = retry;
+  public void setServiceRetrySettings(Retry serviceRetrySettings) {
+    this.serviceRetrySettings = serviceRetrySettings;
   }
 }

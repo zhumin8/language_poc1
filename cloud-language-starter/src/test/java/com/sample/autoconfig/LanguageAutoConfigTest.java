@@ -2,14 +2,10 @@ package com.sample.autoconfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.auth.oauth2.UserCredentials;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.sample.shared.Retry;
 import org.junit.jupiter.api.Test;
@@ -76,8 +72,8 @@ class LanguageAutoConfigTest {
         this.contextRunner
                 .withPropertyValues(
                         "spring.cloud.gcp.language.language-service.enabled=true",
-                        "spring.cloud.gcp.language.language-service.retry.retry-delay-multiplier=2",
-                        "spring.cloud.gcp.language.language-service.retry.initial-retry-delay=PT0.5S"
+                        "spring.cloud.gcp.language.language-service.service-retry-settings.retry-delay-multiplier=2",
+                        "spring.cloud.gcp.language.language-service.service-retry-settings.max-retry-delay=PT0.9S"
                 )
                 .run(
                         ctx -> {
@@ -86,17 +82,18 @@ class LanguageAutoConfigTest {
                             RetrySettings annotateTextRetrySettings =
                                     client.getSettings().annotateTextSettings().getRetrySettings();
                             assertThat(annotateTextRetrySettings.getRetryDelayMultiplier()).isEqualTo(2);
-                            assertThat(annotateTextRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(500));
+                            assertThat(annotateTextRetrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMillis(900));
+
                             // if properties only override certain retry settings, then the others still take on client library defaults
-                            assertThat(annotateTextRetrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMinutes(1)); // default
+                            assertThat(annotateTextRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(100)); // default
                             assertThat(client.getSettings().annotateTextSettings().getRetrySettings().getMaxAttempts()).isEqualTo(0); // default
 
                             RetrySettings analyzeSentimentRetrySettings =
                                     client.getSettings().analyzeSentimentSettings().getRetrySettings();
                             assertThat(analyzeSentimentRetrySettings.getRetryDelayMultiplier()).isEqualTo(2);
-                            assertThat(analyzeSentimentRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(500));
+                            assertThat(analyzeSentimentRetrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMillis(900));
                             // if properties only override certain retry settings, then the others still take on client library defaults
-                            assertThat(analyzeSentimentRetrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMinutes(1)); // default
+                            assertThat(analyzeSentimentRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(100)); // default
                             assertThat(client.getSettings().analyzeSentimentSettings().getRetrySettings().getMaxAttempts()).isEqualTo(0); // default
 
                         });
