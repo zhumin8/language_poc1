@@ -76,15 +76,16 @@ public class LanguageAutoConfig {
   @ConditionalOnMissingBean(name = "languageServiceRetrySettings")
   public RetrySettings languageServiceRetrySettings() {
     RetrySettings.Builder serviceRetrySettings = RetrySettings.newBuilder();
-    // set service defaults with values from service config (refer to gapic generator code for this)
-    serviceRetrySettings.setTotalTimeout(Duration.ofMillis(600000L));
-    serviceRetrySettings.setInitialRetryDelay(Duration.ofMillis(100L));
-    serviceRetrySettings.setRetryDelayMultiplier(1.3);
-    serviceRetrySettings.setMaxRetryDelay(Duration.ofMillis(60000L));
-    serviceRetrySettings.setMaxAttempts(0);
-    // TODO: fill default values for all settings
-
+    // TODO: what default values to use for settings not configured through properties?
     return updateRetrySettings(serviceRetrySettings.build(), this.clientProperties.getServiceRetrySettings());
+  }
+
+  // bean for overriding retry settings on method-level
+  @Bean
+  @ConditionalOnMissingBean(name = "annotateTextRetrySettings")
+  public RetrySettings annotateTextRetrySettings() {
+    RetrySettings defaultRetrySettings = LanguageServiceSettings.newBuilder().annotateTextSettings().getRetrySettings();
+    return updateRetrySettings(defaultRetrySettings, this.clientProperties.getAnnotateTextRetrySettings());
   }
 
   @Bean
@@ -92,7 +93,8 @@ public class LanguageAutoConfig {
   public LanguageServiceSettings languageServiceSettings(
           @Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
           @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider,
-          @Qualifier("languageServiceRetrySettings") RetrySettings languageServiceRetrySettings)
+          @Qualifier("languageServiceRetrySettings") RetrySettings languageServiceRetrySettings,
+          @Qualifier("annotateTextRetrySettings") RetrySettings annotateTextRetrySettings)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
@@ -134,11 +136,10 @@ public class LanguageAutoConfig {
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
 
-    // Retry settings overrides configured through either properties or bean:
-    // update method-level default retry settings with service-level overrides
-      clientSettingsBuilder.annotateTextSettings().setRetrySettings(languageServiceRetrySettings);
-      clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(languageServiceRetrySettings);
-      // TODO: Repeat for all applicable methods (including two here as PoC)
+    // Example: update method-level default retry settings with service-level overrides
+    clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(languageServiceRetrySettings);
+    // Example: update method-level default retry settings with method-level overrides
+    clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
 
     return clientSettingsBuilder.build();
   }
