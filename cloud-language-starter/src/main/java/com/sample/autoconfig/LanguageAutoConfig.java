@@ -21,7 +21,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.threeten.bp.Duration;
 
 /**
  * Create client with client library default setting, except: - set credentialsProvider, so
@@ -71,30 +70,11 @@ public class LanguageAutoConfig {
     return LanguageServiceSettings.defaultTransportChannelProvider();
   }
 
-  // bean for overriding retry settings on service-level
-  @Bean
-  @ConditionalOnMissingBean(name = "languageServiceRetrySettings")
-  public RetrySettings languageServiceRetrySettings() {
-    RetrySettings.Builder serviceRetrySettings = RetrySettings.newBuilder();
-    // TODO: what default values to use for settings not configured through properties?
-    return updateRetrySettings(serviceRetrySettings.build(), this.clientProperties.getServiceRetrySettings());
-  }
-
-  // bean for overriding retry settings on method-level
-  @Bean
-  @ConditionalOnMissingBean(name = "annotateTextRetrySettings")
-  public RetrySettings annotateTextRetrySettings() {
-    RetrySettings defaultRetrySettings = LanguageServiceSettings.newBuilder().annotateTextSettings().getRetrySettings();
-    return updateRetrySettings(defaultRetrySettings, this.clientProperties.getAnnotateTextRetrySettings());
-  }
-
   @Bean
   @ConditionalOnMissingBean
   public LanguageServiceSettings languageServiceSettings(
           @Qualifier("languageServiceCredentials") CredentialsProvider credentialsProvider,
-          @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider,
-          @Qualifier("languageServiceRetrySettings") RetrySettings languageServiceRetrySettings,
-          @Qualifier("annotateTextRetrySettings") RetrySettings annotateTextRetrySettings)
+          @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
 
     LanguageServiceSettings.Builder clientSettingsBuilder =
@@ -136,11 +116,21 @@ public class LanguageAutoConfig {
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
 
-    // Example: update method-level default retry settings with service-level overrides
-    clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(languageServiceRetrySettings);
-    // Example: update method-level default retry settings with method-level overrides
-    clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
+    // Example: update method-level retry settings with service-level property overrides
+    if (clientProperties.getServiceRetrySettings() != null) {
+      // TODO: repeat for each method
+      RetrySettings annotateTextRetrySettings = updateRetrySettingsFromProperties(
+              clientSettingsBuilder.annotateTextSettings().getRetrySettings(),
+              clientProperties.getServiceRetrySettings()
+      );
+      clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
 
+      RetrySettings analyzeSentimentRetrySettings = updateRetrySettingsFromProperties(
+              clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings(),
+              clientProperties.getServiceRetrySettings()
+      );
+      clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(analyzeSentimentRetrySettings);
+    }
     return clientSettingsBuilder.build();
   }
 
@@ -170,7 +160,7 @@ public class LanguageAutoConfig {
   }
 
   // TODO: alternatively, this can live in an util class in spring-cloud-gcp-core
-  private RetrySettings updateRetrySettings(RetrySettings defaultRetrySettings, Retry newRetrySettings) {
+  private RetrySettings updateRetrySettingsFromProperties(RetrySettings defaultRetrySettings, Retry newRetrySettings) {
     RetrySettings.Builder builder = defaultRetrySettings.toBuilder();
     if (newRetrySettings.getTotalTimeout() != null) {
       builder.setTotalTimeout(newRetrySettings.getTotalTimeout());

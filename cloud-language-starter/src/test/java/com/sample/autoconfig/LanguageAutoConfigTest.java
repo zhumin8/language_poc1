@@ -1,15 +1,12 @@
 package com.sample.autoconfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.language.v1.LanguageServiceClient;
-import com.sample.shared.Retry;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -83,32 +80,8 @@ class LanguageAutoConfigTest {
                                     client.getSettings().analyzeSentimentSettings().getRetrySettings();
                             assertThat(analyzeSentimentRetrySettings.getRetryDelayMultiplier()).isEqualTo(2);
                             assertThat(analyzeSentimentRetrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMillis(900));
-                            // if properties only override certain retry settings, should others still take on client library defaults?
-                            // TODO: assertions below do not pass because RetrySetting.Builder default (Duration.ZERO) is used
-                            // assertThat(analyzeSentimentRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(100)); // default
-                        });
-    }
-
-    @Test
-    void testMethodRetrySettingsFromProperties() {
-        this.contextRunner
-                .withPropertyValues(
-                        "spring.cloud.gcp.language.language-service.enabled=true",
-                        "spring.cloud.gcp.language.language-service.annotate-text-retry-settings.retry-delay-multiplier=2",
-                        "spring.cloud.gcp.language.language-service.annotate-text-retry-settings.max-retry-delay=PT0.9S"
-                )
-                .run(
-                        ctx -> {
-                            LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
-
-                            RetrySettings annotateTextRetrySettings =
-                                    client.getSettings().annotateTextSettings().getRetrySettings();
-                            assertThat(annotateTextRetrySettings.getRetryDelayMultiplier()).isEqualTo(2);
-                            assertThat(annotateTextRetrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMillis(900));
-
-                            // if properties only override certain retry settings, then the others still take on client library defaults
-                            assertThat(annotateTextRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(100)); // default
-                            assertThat(annotateTextRetrySettings.getMaxAttempts()).isEqualTo(0); // default
+                            // if properties only override certain retry settings, others should still take on client library defaults
+                            assertThat(analyzeSentimentRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(100)); // default
                         });
     }
 }
