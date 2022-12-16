@@ -69,8 +69,8 @@ class LanguageAutoConfigTest {
         this.contextRunner
                 .withPropertyValues(
                         "spring.cloud.gcp.language.language-service.enabled=true",
-                        "spring.cloud.gcp.language.language-service.service-retry-settings.retry-delay-multiplier=2",
-                        "spring.cloud.gcp.language.language-service.service-retry-settings.max-retry-delay=PT0.9S"
+                        "spring.cloud.gcp.language.language-service.retry-settings.retry-delay-multiplier=2",
+                        "spring.cloud.gcp.language.language-service.retry-settings.max-retry-delay=PT0.9S"
                 )
                 .run(
                         ctx -> {
@@ -82,6 +82,30 @@ class LanguageAutoConfigTest {
                             assertThat(analyzeSentimentRetrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMillis(900));
                             // if properties only override certain retry settings, others should still take on client library defaults
                             assertThat(analyzeSentimentRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(100)); // default
+                        });
+    }
+
+    @Test
+    void testMethodRetrySettingsFromProperties() {
+        this.contextRunner
+                .withPropertyValues(
+                        "spring.cloud.gcp.language.language-service.enabled=true",
+                        "spring.cloud.gcp.language.language-service.retry-settings.retry-delay-multiplier=2",
+                        "spring.cloud.gcp.language.language-service.retry-settings.max-retry-delay=PT0.9S",
+                        "spring.cloud.gcp.language.language-service.annotate-text-retry-settings.retry-delay-multiplier=3"
+                )
+                .run(
+                        ctx -> {
+                            LanguageServiceClient client = ctx.getBean(LanguageServiceClient.class);
+
+                            RetrySettings annotateTextRetrySettings =
+                                    client.getSettings().annotateTextSettings().getRetrySettings();
+                            // Method-level override should take precedence over service-level
+                            assertThat(annotateTextRetrySettings.getRetryDelayMultiplier()).isEqualTo(3);
+                            // For settings without method-level overrides but when service-level is provided, fall back to that
+                            assertThat(annotateTextRetrySettings.getMaxRetryDelay()).isEqualTo(Duration.ofMillis(900));
+                            // Settings with neither method not service-level overrides should still take on client library defaults
+                            assertThat(annotateTextRetrySettings.getInitialRetryDelay()).isEqualTo(Duration.ofMillis(100)); // default
                         });
     }
 }
