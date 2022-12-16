@@ -116,21 +116,34 @@ public class LanguageAutoConfig {
           LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
 
-    // Example: update method-level retry settings with service-level property overrides
-    if (clientProperties.getServiceRetrySettings() != null) {
-      // TODO: repeat for each method
+    // Update method-level retry settings with service-level property overrides
+    Retry serviceRetry = clientProperties.getRetrySettings();
+    if (serviceRetry != null) {
+      // TODO: repeat for each method, including two for example
       RetrySettings annotateTextRetrySettings = updateRetrySettingsFromProperties(
               clientSettingsBuilder.annotateTextSettings().getRetrySettings(),
-              clientProperties.getServiceRetrySettings()
+              serviceRetry
       );
       clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
 
       RetrySettings analyzeSentimentRetrySettings = updateRetrySettingsFromProperties(
               clientSettingsBuilder.analyzeSentimentSettings().getRetrySettings(),
-              clientProperties.getServiceRetrySettings()
+              serviceRetry
       );
       clientSettingsBuilder.analyzeSentimentSettings().setRetrySettings(analyzeSentimentRetrySettings);
     }
+
+    // Update method-level retry settings with method-level property overrides, if specified
+    // TODO: repeat for each method, including one for example
+    Retry annotateTextRetry = clientProperties.getAnnotateTextRetrySettings();
+    if (annotateTextRetry != null) {
+      RetrySettings annotateTextRetrySettings = updateRetrySettingsFromProperties(
+              clientSettingsBuilder.annotateTextSettings().getRetrySettings(),
+              annotateTextRetry
+      );
+      clientSettingsBuilder.annotateTextSettings().setRetrySettings(annotateTextRetrySettings);
+    }
+
     return clientSettingsBuilder.build();
   }
 

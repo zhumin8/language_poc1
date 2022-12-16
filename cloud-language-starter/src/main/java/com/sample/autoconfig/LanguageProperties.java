@@ -22,9 +22,14 @@ public class LanguageProperties implements CredentialsSupplier {
 
   private boolean useRest = false;
 
-  // Configurable properties for overriding RetrySettings
-  // E.g. [prefix].language-service.service-retry-settings.initial-retry-delay=PT0.5S
-  private Retry serviceRetrySettings;
+  // Configurable properties for overriding RetrySettings on service-level
+  // E.g. [prefix].language-service.retry-settings.initial-retry-delay=PT0.5S
+  private Retry retrySettings;
+
+  // Configurable properties for overriding RetrySettings on method-level
+  // This takes precedence over service-level values for the given method if supplied
+  // E.g. [prefix].language-service.annotate-text-retry-settings.initial-retry-delay=PT0.9S
+  private Retry annotateTextRetrySettings;
 
   @Override
   public Credentials getCredentials() {
@@ -51,12 +56,20 @@ public class LanguageProperties implements CredentialsSupplier {
     return useRest;
   }
 
-  public Retry getServiceRetrySettings() {
-    return serviceRetrySettings;
+  public Retry getRetrySettings() {
+    return retrySettings;
   }
 
-  public void setServiceRetrySettings(Retry serviceRetrySettings) {
-    this.serviceRetrySettings = serviceRetrySettings;
+  public void setRetrySettings(Retry serviceRetrySettings) {
+    this.retrySettings = serviceRetrySettings;
+  }
+
+  public Retry getAnnotateTextRetrySettings() {
+    return annotateTextRetrySettings;
+  }
+
+  public void setAnnotateTextRetrySettings(Retry annotateTextRetrySettings) {
+    this.annotateTextRetrySettings = annotateTextRetrySettings;
   }
 
 }
