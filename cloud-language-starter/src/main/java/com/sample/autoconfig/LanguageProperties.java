@@ -2,9 +2,9 @@ package com.sample.autoconfig;
 
 import com.google.cloud.spring.core.Credentials;
 import com.google.cloud.spring.core.CredentialsSupplier;
+import com.sample.shared.Retry;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.threeten.bp.Duration;
 
 @ConfigurationProperties("spring.cloud.gcp.language.language-service")
 // branding considerations: google.cloud.spring.autoconfig.language-service
@@ -22,15 +22,14 @@ public class LanguageProperties implements CredentialsSupplier {
 
   private boolean useRest = false;
 
-  // retry settings: for each method, set *relevant* retry settings directly to its default value
-  // only writing out retry settings for one method (AnnotateText) as example
-  private Duration annotateTextInitialRetryDelay = Duration.ofMillis(100L); // do defaults here, or in autoconfig
-  private Double annotateTextRetryDelayMultiplier = 1.3;
-  private Duration annotateTextMaxRetryDelay = Duration.ofMillis(60000L);
-  private Duration annotateTextInitialRpcTimeout = Duration.ofMillis(600000L);
-  private Double annotateTextRpcTimeoutMultiplier = 1.0;
-  private Duration annotateTextMaxRpcTimeout = Duration.ofMillis(600000L);
-  private Duration annotateTextTotalTimeout = Duration.ofMillis(600000L);
+  // Configurable properties for overriding RetrySettings on service-level
+  // E.g. [prefix].language-service.retry-settings.initial-retry-delay=PT0.5S
+  private Retry retrySettings;
+
+  // Configurable properties for overriding RetrySettings on method-level
+  // This takes precedence over service-level values for the given method if supplied
+  // E.g. [prefix].language-service.annotate-text-retry-settings.initial-retry-delay=PT0.9S
+  private Retry annotateTextRetrySettings;
 
   @Override
   public Credentials getCredentials() {
@@ -57,60 +56,20 @@ public class LanguageProperties implements CredentialsSupplier {
     return useRest;
   }
 
-  // getter and setters
-  public Duration getAnnotateTextInitialRetryDelay() {
-    return annotateTextInitialRetryDelay;
+  public Retry getRetrySettings() {
+    return retrySettings;
   }
 
-  public Double getAnnotateTextRetryDelayMultiplier() {
-    return annotateTextRetryDelayMultiplier;
+  public void setRetrySettings(Retry serviceRetrySettings) {
+    this.retrySettings = serviceRetrySettings;
   }
 
-  public Duration getAnnotateTextMaxRetryDelay() {
-    return annotateTextMaxRetryDelay;
+  public Retry getAnnotateTextRetrySettings() {
+    return annotateTextRetrySettings;
   }
 
-  public Duration getAnnotateTextInitialRpcTimeout() {
-    return annotateTextInitialRpcTimeout;
+  public void setAnnotateTextRetrySettings(Retry annotateTextRetrySettings) {
+    this.annotateTextRetrySettings = annotateTextRetrySettings;
   }
 
-  public Double getAnnotateTextRpcTimeoutMultiplier() {
-    return annotateTextRpcTimeoutMultiplier;
-  }
-
-  public Duration getAnnotateTextMaxRpcTimeout() {
-    return annotateTextMaxRpcTimeout;
-  }
-
-  public Duration getAnnotateTextTotalTimeout() {
-    return annotateTextTotalTimeout;
-  }
-
-  public void setAnnotateTextInitialRetryDelay(Duration annotateTextInitialRetryDelay) {
-    this.annotateTextInitialRetryDelay = annotateTextInitialRetryDelay;
-  }
-
-  public void setAnnotateTextRetryDelayMultiplier(Double annotateTextRetryDelayMultiplier) {
-    this.annotateTextRetryDelayMultiplier = annotateTextRetryDelayMultiplier;
-  }
-
-  public void setAnnotateTextMaxRetryDelay(Duration annotateTextMaxRetryDelay) {
-    this.annotateTextMaxRetryDelay = annotateTextMaxRetryDelay;
-  }
-
-  public void setAnnotateTextInitialRpcTimeout(Duration annotateTextInitialRpcTimeout) {
-    this.annotateTextInitialRpcTimeout = annotateTextInitialRpcTimeout;
-  }
-
-  public void setAnnotateTextRpcTimeoutMultiplier(Double annotateTextRpcTimeoutMultiplier) {
-    this.annotateTextRpcTimeoutMultiplier = annotateTextRpcTimeoutMultiplier;
-  }
-
-  public void setAnnotateTextMaxRpcTimeout(Duration annotateTextMaxRpcTimeout) {
-    this.annotateTextMaxRpcTimeout = annotateTextMaxRpcTimeout;
-  }
-
-  public void setAnnotateTextTotalTimeout(Duration annotateTextTotalTimeout) {
-    this.annotateTextTotalTimeout = annotateTextTotalTimeout;
-  }
 }
