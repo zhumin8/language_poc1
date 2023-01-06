@@ -91,6 +91,9 @@ public class LanguageAutoConfig {
   @Bean
   @ConditionalOnMissingBean(name = "defaultLanguageTransportChannelProvider")
   public TransportChannelProvider defaultLanguageTransportChannelProvider() {
+    if (clientProperties.isUseRest()) {
+      return LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build();
+    }
     return LanguageServiceSettings.defaultTransportChannelProvider();
   }
 
@@ -100,8 +103,16 @@ public class LanguageAutoConfig {
       @Qualifier("defaultLanguageTransportChannelProvider") TransportChannelProvider defaultTransportChannelProvider)
       throws IOException {
 
-    LanguageServiceSettings.Builder clientSettingsBuilder =
-        LanguageServiceSettings.newBuilder()
+    LanguageServiceSettings.Builder clientSettingsBuilder;
+
+    if (clientProperties.isUseRest()) {
+      // To use REST (HTTP1.1/JSON) transport (instead of gRPC)
+      clientSettingsBuilder = LanguageServiceSettings.newHttpJsonBuilder();
+    } else {
+      clientSettingsBuilder = LanguageServiceSettings.newBuilder();
+    }
+
+    clientSettingsBuilder
             .setCredentialsProvider(credentialsProvider)
             // default transport channel provider, allow user to override bean for example to configure a proxy
             // https://github.com/googleapis/google-cloud-java#configuring-a-proxy
@@ -130,13 +141,6 @@ public class LanguageAutoConfig {
           .setExecutorThreadCount(clientProperties.getExecutorThreadCount()).build();
       clientSettingsBuilder
           .setBackgroundExecutorProvider(executorProvider);
-    }
-
-    // To use REST (HTTP1.1/JSON) transport (instead of gRPC) for sending and receiving requests over
-    // can set a property to enable this if specified, but seems too niche usecase?
-    if (clientProperties.isUseRest()) {
-      clientSettingsBuilder.setTransportChannelProvider(
-          LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build());
     }
 
     // Retry Settings: set for each method.
