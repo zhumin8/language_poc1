@@ -93,9 +93,8 @@ public class LanguageAutoConfig {
   public TransportChannelProvider defaultLanguageTransportChannelProvider() {
     if (clientProperties.isUseRest()) {
       return LanguageServiceSettings.defaultHttpJsonTransportProviderBuilder().build();
-    } else {
-      return LanguageServiceSettings.defaultTransportChannelProvider();
     }
+    return LanguageServiceSettings.defaultTransportChannelProvider();
   }
 
   @Bean
